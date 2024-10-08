@@ -79,19 +79,13 @@ cloudinary.config({
   api_secret: process.env.api_secret,
 });
 
-const saveQRCodeToFile = (base64Image) => {
+const saveQRCodeToFile = (base64Image, index) => {
   const base64Data = base64Image.replace(/^data:image\/png;base64,/, "");
-  // const filePath = path.join(
-  //   __dirname,
-  //   "../public/qrcodes",
-  //   `qrcode-${Date.now()}.png`
-  // );
   let time = Date.now();
-  file_name =
-    "\\\\tpfile\\Everyone\\temp\\QRCODE\\" + "qrcode-" + time + ".png";
+  file_name = `\\\\tpfile\\Everyone\\temp\\QRCODE\\qrcode-${time}-${index}.png`;
   const filePath = path.join(
     "//tpfile/Everyone/temp/QRCODE",
-    `qrcode-${time}.png`
+    `qrcode-${time}-${index}.png`
   );
 
   fs.writeFileSync(filePath, base64Data, "base64");
@@ -118,13 +112,22 @@ router.post("/user-send-email", async (req, res) => {
     cur_time = formattedString.slice(0, 10).trim(); //領票日期
 
     const { qrCodeUrl, names, seat, username, numbers, emails } = req.body;
+    console.log("url....test...", qrCodeUrl);
     let domain = emails.split("@")[1]; //取得domain
 
+    // 保存多個 QR 碼並上傳到 Cloudinary
+    const qrCodeUrlOnCloudinary = await Promise.all(
+      qrCodeUrl.map(async (qrCodeUrl, index) => {
+        const filePath = saveQRCodeToFile(qrCodeUrl, index);
+        return await uploadQRCodeToCloudinary(filePath);
+      })
+    );
+
     // 保存base64圖片到伺服器
-    const filePath = saveQRCodeToFile(qrCodeUrl);
+    // const filePath = saveQRCodeToFile(qrCodeUrl);
 
     // 上傳到 Cloudinary 並獲取公開的 URL
-    const qrCodeUrlOnCloudinary = await uploadQRCodeToCloudinary(filePath);
+    // const qrCodeUrlOnCloudinary = await uploadQRCodeToCloudinary(filePath);
 
     // 設定郵件傳輸服務
     let transporter = nodemailer.createTransport({
@@ -133,6 +136,14 @@ router.post("/user-send-email", async (req, res) => {
         user: process.env.user,
         pass: process.env.password,
       },
+    });
+
+    const attachments = qrCodeUrl.map((url, index) => {
+      return {
+        filename: `入場券${index + 1}.png`,
+        content: url.split(";base64,").pop(),
+        encoding: "base64",
+      };
     });
 
     let mailOptions = "";
@@ -156,6 +167,7 @@ router.post("/user-send-email", async (req, res) => {
           <p style="color:blue; font-size:14px;">***系統操作或票券取得相關問題，請洽客服專線(02)2792-8788#502</p>
           <p style="color:blue; font-size:14px;">***服務時間：週一到週五 09:00~18:00</p>
         `,
+        attachments: attachments,
       };
     } else {
       mailOptions = {
@@ -177,6 +189,7 @@ router.post("/user-send-email", async (req, res) => {
         <p style="color:blue; font-size:14px;">***系統操作或票券取得相關問題，請洽客服專線(02)2792-8788#502</p>
         <p style="color:blue; font-size:14px;">***服務時間：週一到週五 09:00~18:00</p>
       `,
+        attachments: attachments,
       };
     }
 
@@ -207,6 +220,7 @@ router.post("/user-send-email", async (req, res) => {
     return res.status(405).json({ message: "Method not allowed" });
   }
 });
+
 router.post("/user-send-email-person", async (req, res) => {
   if (req.method === "POST") {
     //日期格式轉換
