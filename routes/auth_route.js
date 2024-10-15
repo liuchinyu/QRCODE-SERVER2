@@ -129,7 +129,7 @@ router.post("/user-send-email", async (req, res) => {
 
     const attachments = qrCodeUrl.map((url, index) => {
       return {
-        filename: `入場券${index + 1}.png`,
+        filename: `XGEN${ticketNum + 1 + index}.png`,
         content: url.split(";base64,").pop(),
         encoding: "base64",
       };
@@ -156,7 +156,7 @@ router.post("/user-send-email", async (req, res) => {
           <p>公司名稱/捐款人名稱：${names}</p>
           <p>領票人姓名：${username}</p>
           <p>座位區域：${seat}</p>
-          <p>票券號碼：${ticketNum + 1}~${ticketNum + numbers}</p>
+          <p>票券號碼：XGEN${ticketNum + 1}~XGEN${ticketNum + numbers}</p>
          
           <p style="color:blue; font-size:14px;">如有票券取得之相關問題，請隨時與我們聯繫，謝謝</p>
           <p style="color:blue; font-size:14px;">客服電話：(02)2792-8788#502</p>
@@ -182,7 +182,7 @@ router.post("/user-send-email", async (req, res) => {
           <p>公司名稱/捐款人名稱：${names}</p>
           <p>領票人姓名：${username}</p>
           <p>座位區域：${seat}</p>
-          <p>票券號碼：${ticketNum + 1}~${ticketNum + numbers}</p>
+          <p>票券號碼：XGEN${ticketNum + 1}~XGEN${ticketNum + numbers}</p>
           <p style="color:blue; font-size:14px;">如有票券取得之相關問題，請隨時與我們聯繫，謝謝</p>
           <p style="color:blue; font-size:14px;">客服電話：(02)2792-8788#502</p>
           <p style="color:blue; font-size:14px;">客服信箱：xgen.org.tw@gmail.com</p>
@@ -212,7 +212,7 @@ router.post("/user-send-email", async (req, res) => {
             <p>公司名稱/捐款人名稱：${names}</p>
             <p>領票人姓名：${username}</p>
             <p>座位區域：${seat}</p>
-            <p>票券號碼：${ticketNum + 1}</p>
+            <p>票券號碼：XGEN${ticketNum + 1}</p>
             
             <p style="color:blue; font-size:14px;">如有票券取得之相關問題，請隨時與我們聯繫，謝謝</p>
             <p style="color:blue; font-size:14px;">客服電話：(02)2792-8788#502</p>
@@ -238,7 +238,7 @@ router.post("/user-send-email", async (req, res) => {
           <p>公司名稱/捐款人名稱：${names}</p>
           <p>領票人姓名：${username}</p>
           <p>座位區域：${seat}</p>
-          <p>票券號碼：${ticketNum + 1}</p>
+          <p>票券號碼：XGEN${ticketNum + 1}</p>
           
           <p style="color:blue; font-size:14px;">如有票券取得之相關問題，請隨時與我們聯繫，謝謝</p>
           <p style="color:blue; font-size:14px;">客服電話：(02)2792-8788#502</p>
@@ -260,14 +260,13 @@ router.post("/user-send-email", async (req, res) => {
         //insertOne函式需要使用collection.
         let length = qrCodeUrlOnCloudinary.length;
         let times = 0;
-        console.log("length", length);
         for (; length > 0; length--) {
           if (times == 0) {
             const saveResult = await Record.collection.insertOne({
               get_ticket_date: cur_time,
               donor: names,
               taker: username,
-              ticket_id: ticketNum + numbers,
+              ticket_id: ticketNum + 1,
               ticket_count: numbers,
               seat: seat,
               email: emails,
@@ -275,11 +274,12 @@ router.post("/user-send-email", async (req, res) => {
             });
             times++;
           } else {
+            // 針對同一個取票人只帶出取票編號、座位、URL
             const saveResult = await Record.collection.insertOne({
               get_ticket_date: "",
               donor: "",
               taker: "",
-              ticket_id: ticketNum + numbers + times,
+              ticket_id: ticketNum + times + 1,
               ticket_count: "",
               seat: seat,
               email: "",
