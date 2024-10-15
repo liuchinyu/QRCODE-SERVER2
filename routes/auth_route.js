@@ -62,29 +62,28 @@ cloudinary.config({
   api_secret: process.env.api_secret,
 });
 
-const saveQRCodeToFile = (base64Image, index) => {
+const saveQRCodeToBuffer = (base64Image) => {
   const base64Data = base64Image.replace(/^data:image\/png;base64,/, "");
-  let time = Date.now();
-  file_name = `\\\\tpfile\\Everyone\\temp\\QRCODE\\qrcode-${time}-${index}.png`;
-  const filePath = path.join(
-    "//tpfile/Everyone/temp/QRCODE",
-    `qrcode-${time}-${index}.png`
-  );
-
-  fs.writeFileSync(filePath, base64Data, "base64");
-  return filePath;
+  return Buffer.from(base64Data, "base64");
 };
 
-const uploadQRCodeToCloudinary = async (filePath) => {
-  try {
-    const result = await cloudinary.uploader.upload(filePath, {
-      folder: "qrcodes", // 將圖片放到 Cloudinary 的 qrcodes 資料夾中
-    });
-    return result.secure_url; // 獲取公開的圖片 URL
-  } catch (error) {
-    console.error("Error uploading to Cloudinary:", error);
-    throw error;
-  }
+const uploadQRCodeToCloudinary = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: "qrcodes" },
+      (error, result) => {
+        if (error) {
+          console.error("Error uploading to Cloudinary:", error);
+          reject(error);
+        } else {
+          console.log("url..1", result.secure_url);
+          resolve(result.secure_url);
+        }
+      }
+    );
+
+    uploadStream.end(buffer);
+  });
 };
 
 router.post("/user-send-email", async (req, res) => {
@@ -109,16 +108,15 @@ router.post("/user-send-email", async (req, res) => {
     // 保存多個 QR 碼並上傳到 Cloudinary
     const qrCodeUrlOnCloudinary = await Promise.all(
       qrCodeUrl.map(async (qrCodeUrl, index) => {
-        const filePath = saveQRCodeToFile(qrCodeUrl, index);
-        return await uploadQRCodeToCloudinary(filePath);
+        const buffer = saveQRCodeToBuffer(qrCodeUrl);
+        return await uploadQRCodeToCloudinary(buffer);
       })
     );
-
+    console.log("qrCodeUrlOnCloudinary", qrCodeUrlOnCloudinary);
     // 保存base64圖片到伺服器
     // const filePath = saveQRCodeToFile(qrCodeUrl);
 
     // 上傳到 Cloudinary 並獲取公開的 URL
-    // const qrCodeUrlOnCloudinary = await uploadQRCodeToCloudinary(filePath);
 
     // 設定郵件傳輸服務
     let transporter = nodemailer.createTransport({
@@ -260,16 +258,36 @@ router.post("/user-send-email", async (req, res) => {
         //將領取票券資料存入DB
 
         //insertOne函式需要使用collection.
-        const saveResult = await Record.collection.insertOne({
-          get_ticket_date: cur_time,
-          donor: names,
-          taker: username,
-          ticket_id: ticketNum + numbers,
-          ticket_count: numbers,
-          seat: seat,
-          email: emails,
-          url: file_name,
-        });
+        let length = qrCodeUrlOnCloudinary.length;
+        let times = 0;
+        console.log("length", length);
+        for (; length > 0; length--) {
+          if (times == 0) {
+            const saveResult = await Record.collection.insertOne({
+              get_ticket_date: cur_time,
+              donor: names,
+              taker: username,
+              ticket_id: ticketNum + numbers,
+              ticket_count: numbers,
+              seat: seat,
+              email: emails,
+              url: qrCodeUrlOnCloudinary[times],
+            });
+            times++;
+          } else {
+            const saveResult = await Record.collection.insertOne({
+              get_ticket_date: "",
+              donor: "",
+              taker: "",
+              ticket_id: ticketNum + numbers + times,
+              ticket_count: "",
+              seat: seat,
+              email: "",
+              url: qrCodeUrlOnCloudinary[times],
+            });
+            times++;
+          }
+        }
       }
     } catch (error) {
       console.error("Error sending email:", error);
