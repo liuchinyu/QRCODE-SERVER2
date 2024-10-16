@@ -262,18 +262,18 @@ router.post("/user-send-email", async (req, res) => {
       if (send_result) {
         res.status(200).json({ message: "Email sent successfully" });
         //將領取票券資料存入DB
-
-        //insertOne函式需要使用collection.
         let length = qrCodeUrlOnCloudinary.length;
         let times = 0;
         for (; length > 0; length--) {
           if (times == 0) {
+            //insertOne函式需要使用collection.
             const saveResult = await Record.collection.insertOne({
               get_ticket_date: cur_time,
               donor: names,
               taker: username,
               ticket_id: ticketNum + 1,
               ticket_count: numbers,
+              ticket_kid: kidNumbers,
               seat: seat,
               email: emails,
               url: qrCodeUrlOnCloudinary[times],
@@ -287,6 +287,7 @@ router.post("/user-send-email", async (req, res) => {
               taker: "",
               ticket_id: ticketNum + times + 1,
               ticket_count: "",
+              ticket_kid: "",
               seat: seat,
               email: "",
               url: qrCodeUrlOnCloudinary[times],
