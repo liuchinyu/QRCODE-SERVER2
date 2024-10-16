@@ -76,7 +76,6 @@ const uploadQRCodeToCloudinary = (buffer) => {
           console.error("Error uploading to Cloudinary:", error);
           reject(error);
         } else {
-          console.log("url..1", result.secure_url);
           resolve(result.secure_url);
         }
       }
@@ -113,7 +112,6 @@ router.post("/user-send-email", async (req, res) => {
         return await uploadQRCodeToCloudinary(buffer);
       })
     );
-    console.log("qrCodeUrlOnCloudinary", qrCodeUrlOnCloudinary);
     // 保存base64圖片到伺服器
     // const filePath = saveQRCodeToFile(qrCodeUrl);
 
