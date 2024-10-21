@@ -4,6 +4,8 @@ const dotenv = require("dotenv");
 const session = require("express-session");
 dotenv.config();
 
+const User = require("./models/").user;
+
 const QRCode = require("qrcode");
 const mongoose = require("mongoose");
 const app = express();
@@ -26,12 +28,9 @@ app.use(cors());
 app.use("/api/user", authRoute);
 
 mongoose
-  .connect(process.env.MONGODB_CONNECTION)
+  .connect(process.env.MONGODB_CONNECTION, { dbName: "qrcodeDB" })
   // .connect("mongodb://localhost:27017/qrcodeDB")
-  .then(() => {
-    //connect會回傳promise物件
-    console.log("成功連結mongoDB...");
-  })
+  .then(async () => {})
   .catch((e) => {
     console.log(e);
   });
