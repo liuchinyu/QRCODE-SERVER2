@@ -144,24 +144,26 @@ router.post("/user-send-email", async (req, res) => {
           to: emails,
           subject: "<<接棒未來，揮出夢想>>取票成功通知",
           html: `
-          <p>${username} 您好，<span style="color:red">您已成功領取 ${numbers} 張入場電子票券</span></p>
-          <p>附件為您所領取的入場電子票券QRCODE，</p>
-          <p style="color:red">再請協助將入場電子票券QRCODE轉發給其它出席人員，每張入場電子票券QRCODE僅限1位大人使用，12歲以下的孩童可免費入場!</p>
-          <p>當天於驗票口出示即可入場，期待您一同前來共襄盛舉!</p>
-          <p>活動名稱：接棒未來，揮出夢想</p>
-          <p>活動地點：台北大巨蛋-台北市信義區忠孝東路四段515號</p>
-          <p>活動日期：2024年11月23日(六)</p>
-          <p>活動時間：13:00~16:05</p>
-          <p>公司名稱/捐款人名稱：${names}</p>
-          <p>領票人姓名：${username}</p>
-          <p>大人人數：${numbers}</p>
-          <p>孩童人數：${kidNumbers}</p>
-          <p>座位區域：${seat}</p>
-          <p>票券號碼：XGEN${ticketNum + 1}~XGEN${ticketNum + numbers}</p>
-          <p style="color:blue; font-size:14px;">如有票券取得之相關問題，請隨時與我們聯繫，謝謝</p>
-          <p style="color:blue; font-size:14px;">客服電話：(02)2792-8788#502</p>
-          <p style="color:blue; font-size:14px;">客服信箱：xgen.org.tw@gmail.com</p>
-          <p style="color:blue; font-size:14px;">服務時間：週一到週五 09:00~18:00</p>
+          <div style="font-family: 'Microsoft JhengHei', sans-serif;">
+            <p>${username} 您好，<span style="color:red">您已成功領取 ${numbers} 張入場電子票券</span></p>
+            <p>附件為您所領取的入場電子票券QRCODE，</p>
+            <p style="color:red">再請協助將入場電子票券QRCODE轉發給其它出席人員，每張入場電子票券QRCODE僅限1位大人使用，12歲以下的孩童可免費入場!</p>
+            <p>當天於驗票口出示即可入場，期待您一同前來共襄盛舉!</p>
+            <p>活動名稱：接棒未來，揮出夢想</p>
+            <p>活動地點：台北大巨蛋-台北市信義區忠孝東路四段515號</p>
+            <p>活動日期：2024年11月23日(六)</p>
+            <p>活動時間：13:00~16:05</p>
+            <p>公司名稱/捐款人名稱：${names}</p>
+            <p>領票人姓名：${username}</p>
+            <p>大人人數：${numbers}</p>
+            <p>孩童人數：${kidNumbers}</p>
+            <p>座位區域：${seat}</p>
+            <p>票券號碼：XGEN${ticketNum + 1}~XGEN${ticketNum + numbers}</p>
+            <p style="color:blue; font-size:14px;">如有票券取得之相關問題，請隨時與我們聯繫，謝謝</p>
+            <p style="color:blue; font-size:14px;">客服電話：(02)2792-8788#502</p>
+            <p style="color:blue; font-size:14px;">客服信箱：xgen.org.tw@gmail.com</p>
+            <p style="color:blue; font-size:14px;">服務時間：週一到週五 09:00~18:00</p>
+          </div>
         `,
           attachments: attachments,
         };
@@ -171,24 +173,26 @@ router.post("/user-send-email", async (req, res) => {
           to: emails,
           subject: "<<接棒未來，揮出夢想>>取票成功通知",
           html: `
-          <p>${username} 您好，<span style="color:red">您已成功領取 ${numbers} 張入場電子票券</span></p>
-          <p>附件為您所領取的入場電子票券QRCODE，</p>
-          <p style="color:red">再請協助將入場電子票券QRCODE轉發給其它出席人員，每張入場電子票券QRCODE僅限1位大人使用，12歲以下的孩童可免費入場!</p>
-          <p>當天於驗票口出示即可入場，期待您一同前來共襄盛舉!</p>
-          <p>活動名稱：接棒未來，揮出夢想</p>
-          <p>活動地點：台北大巨蛋-台北市信義區忠孝東路四段515號</p>
-          <p>活動日期：2024年11月23日(六)</p>
-          <p>活動時間：13:00~16:05</p>
-          <p>公司名稱/捐款人名稱：${names}</p>
-          <p>領票人姓名：${username}</p>
-          <p>大人人數：${numbers}</p>
-          <p>孩童人數：${kidNumbers}</p>
-          <p>座位區域：${seat}</p>
-          <p>票券號碼：XGEN${ticketNum + 1}~XGEN${ticketNum + numbers}</p>
-          <p style="color:blue; font-size:14px;">如有票券取得之相關問題，請隨時與我們聯繫，謝謝</p>
-          <p style="color:blue; font-size:14px;">客服電話：(02)2792-8788#502</p>
-          <p style="color:blue; font-size:14px;">客服信箱：xgen.org.tw@gmail.com</p>
-          <p style="color:blue; font-size:14px;">服務時間：週一到週五 09:00~18:00</p>
+          <div style="font-family: 'Microsoft JhengHei', sans-serif;">
+            <p>${username} 您好，<span style="color:red">您已成功領取 ${numbers} 張入場電子票券</span></p>
+            <p>附件為您所領取的入場電子票券QRCODE，</p>
+            <p style="color:red">再請協助將入場電子票券QRCODE轉發給其它出席人員，每張入場電子票券QRCODE僅限1位大人使用，12歲以下的孩童可免費入場!</p>
+            <p>當天於驗票口出示即可入場，期待您一同前來共襄盛舉!</p>
+            <p>活動名稱：接棒未來，揮出夢想</p>
+            <p>活動地點：台北大巨蛋-台北市信義區忠孝東路四段515號</p>
+            <p>活動日期：2024年11月23日(六)</p>
+            <p>活動時間：13:00~16:05</p>
+            <p>公司名稱/捐款人名稱：${names}</p>
+            <p>領票人姓名：${username}</p>
+            <p>大人人數：${numbers}</p>
+            <p>孩童人數：${kidNumbers}</p>
+            <p>座位區域：${seat}</p>
+            <p>票券號碼：XGEN${ticketNum + 1}~XGEN${ticketNum + numbers}</p>
+            <p style="color:blue; font-size:14px;">如有票券取得之相關問題，請隨時與我們聯繫，謝謝</p>
+            <p style="color:blue; font-size:14px;">客服電話：(02)2792-8788#502</p>
+            <p style="color:blue; font-size:14px;">客服信箱：xgen.org.tw@gmail.com</p>
+            <p style="color:blue; font-size:14px;">服務時間：週一到週五 09:00~18:00</p>
+          </div>
         `,
           attachments: attachments,
         };
@@ -202,6 +206,7 @@ router.post("/user-send-email", async (req, res) => {
           to: emails,
           subject: "<<接棒未來，揮出夢想>>取票成功通知",
           html: `
+          <div style="font-family: 'Microsoft JhengHei', sans-serif;">
             <p>${username} 您好，<span style="color:red">您已成功領取${numbers}張入場電子票券</span></p>
             <p>下方為您的入場票券QRCODE，<span style="color:red">每張入場電子票券QRCODE僅限1位大人使用，12歲以下的孩童可免費入場!</span></p>
             <p>當天於驗票口出示即可入場，期待您一同前來共襄盛舉!</p>
@@ -221,6 +226,7 @@ router.post("/user-send-email", async (req, res) => {
             <p style="color:blue; font-size:14px;">客服電話：(02)2792-8788#502</p>
             <p style="color:blue; font-size:14px;">客服信箱：xgen.org.tw@gmail.com</p>
             <p style="color:blue; font-size:14px;">服務時間：週一到週五 09:00~18:00</p>
+          </div>
           `,
         };
       } else {
@@ -229,25 +235,27 @@ router.post("/user-send-email", async (req, res) => {
           to: emails,
           subject: "<<接棒未來，揮出夢想>>取票成功通知",
           html: `
-          <p>${username} 您好，<span style="color:red">您已成功領取${numbers}張入場電子票券</span></p>
-          <p>下方為您的入場票券QRCODE，<span style="color:red">每張入場電子票券QRCODE僅限1位大人使用，12歲以下的孩童可免費入場!</span></p>
-          <p>當天於驗票口出示即可入場，期待您一同前來共襄盛舉!</p>
-          <p>入場票券QRCODE</p>
-          <img src="${qrCodeUrl}" alt="QR Code" />
-          <p>活動名稱：接棒未來，揮出夢想</p>
-          <p>活動地點：台北大巨蛋-台北市信義區忠孝東路四段515號</p>
-          <p>活動日期：2024年11月23日(六)</p>
-          <p>活動時間：13:00~16:05</p>
-          <p>公司名稱/捐款人名稱：${names}</p>
-          <p>領票人姓名：${username}</p>
-          <p>大人人數：${numbers}</p>
-          <p>孩童人數：${kidNumbers}</p>
-          <p>座位區域：${seat}</p>
-          <p>票券號碼：XGEN${ticketNum + 1}</p>
-          <p style="color:blue; font-size:14px;">如有票券取得之相關問題，請隨時與我們聯繫，謝謝</p>
-          <p style="color:blue; font-size:14px;">客服電話：(02)2792-8788#502</p>
-          <p style="color:blue; font-size:14px;">客服信箱：xgen.org.tw@gmail.com</p>
-          <p style="color:blue; font-size:14px;">服務時間：週一到週五 09:00~18:00</p>
+          <div style="font-family: 'Microsoft JhengHei', sans-serif;">
+            <p>${username} 您好，<span style="color:red">您已成功領取${numbers}張入場電子票券</span></p>
+            <p>下方為您的入場票券QRCODE，<span style="color:red">每張入場電子票券QRCODE僅限1位大人使用，12歲以下的孩童可免費入場!</span></p>
+            <p>當天於驗票口出示即可入場，期待您一同前來共襄盛舉!</p>
+            <p>入場票券QRCODE</p>
+            <img src="${qrCodeUrl}" alt="QR Code" />
+            <p>活動名稱：接棒未來，揮出夢想</p>
+            <p>活動地點：台北大巨蛋-台北市信義區忠孝東路四段515號</p>
+            <p>活動日期：2024年11月23日(六)</p>
+            <p>活動時間：13:00~16:05</p>
+            <p>公司名稱/捐款人名稱：${names}</p>
+            <p>領票人姓名：${username}</p>
+            <p>大人人數：${numbers}</p>
+            <p>孩童人數：${kidNumbers}</p>
+            <p>座位區域：${seat}</p>
+            <p>票券號碼：XGEN${ticketNum + 1}</p>
+            <p style="color:blue; font-size:14px;">如有票券取得之相關問題，請隨時與我們聯繫，謝謝</p>
+            <p style="color:blue; font-size:14px;">客服電話：(02)2792-8788#502</p>
+            <p style="color:blue; font-size:14px;">客服信箱：xgen.org.tw@gmail.com</p>
+            <p style="color:blue; font-size:14px;">服務時間：週一到週五 09:00~18:00</p>
+          </div>
         `,
         };
       }
