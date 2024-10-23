@@ -140,9 +140,9 @@ router.post("/user-send-email", async (req, res) => {
     if (numbers > 1) {
       if (domain == "gmail.com") {
         mailOptions = {
-          from: '"活動通知-入場電子票券" <qrcode0908@gmail.com>',
+          from: "xgen.org.tw@gmail.com",
           to: emails,
-          subject: "<<接棒未來，揮出夢想>>取票成功通知",
+          subject: "<<接棒未來 揮出夢想>>入場電子票券 取票成功通知",
           html: `
           <div style="font-family: 'Microsoft JhengHei', sans-serif;">
             <p>${username} 您好，<span style="color:red">您已成功領取 ${numbers} 張入場電子票券</span></p>
@@ -169,9 +169,9 @@ router.post("/user-send-email", async (req, res) => {
         };
       } else {
         mailOptions = {
-          from: '"活動通知-入場電子票券" <qrcode0908@gmail.com>',
+          from: "xgen.org.tw@gmail.com",
           to: emails,
-          subject: "<<接棒未來，揮出夢想>>取票成功通知",
+          subject: "<<接棒未來 揮出夢想>>入場電子票券 取票成功通知",
           html: `
           <div style="font-family: 'Microsoft JhengHei', sans-serif;">
             <p>${username} 您好，<span style="color:red">您已成功領取 ${numbers} 張入場電子票券</span></p>
@@ -202,9 +202,9 @@ router.post("/user-send-email", async (req, res) => {
     else {
       if (domain == "gmail.com") {
         mailOptions = {
-          from: '"<qrcode0908@gmail.com>"',
+          from: "xgen.org.tw@gmail.com",
           to: emails,
-          subject: "<<接棒未來，揮出夢想>>取票成功通知",
+          subject: "<<接棒未來 揮出夢想>>入場電子票券 取票成功通知",
           html: `
           <div style="font-family: 'Microsoft JhengHei', sans-serif;">
             <p>${username} 您好，<span style="color:red">您已成功領取${numbers}張入場電子票券</span></p>
@@ -231,9 +231,9 @@ router.post("/user-send-email", async (req, res) => {
         };
       } else {
         mailOptions = {
-          from: '"活動通知-入場電子票券" <qrcode0908@gmail.com>',
+          from: "xgen.org.tw@gmail.com",
           to: emails,
-          subject: "<<接棒未來，揮出夢想>>取票成功通知",
+          subject: "<<接棒未來 揮出夢想>>入場電子票券 取票成功通知",
           html: `
           <div style="font-family: 'Microsoft JhengHei', sans-serif;">
             <p>${username} 您好，<span style="color:red">您已成功領取${numbers}張入場電子票券</span></p>
