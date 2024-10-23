@@ -270,6 +270,9 @@ router.post("/user-send-email", async (req, res) => {
         //將領取票券資料存入DB
         let length = qrCodeUrlOnCloudinary.length;
         let times = 0;
+        console.log("cur_time", cur_time);
+        cur_time = cur_time.replace(/\//g, "-");
+        console.log("new_cut_tikme", cur_time);
         for (; length > 0; length--) {
           if (times == 0) {
             //insertOne函式需要使用collection.
