@@ -11,10 +11,11 @@ const mongoose = require("mongoose");
 const app = express();
 const authRoute = require("./routes").auth;
 const cors = require("cors");
+const port = process.env.PORT || 8080;
 
 //middlewares
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" })); //增大limit以傳輸更多QRCODE
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(
   session({
     secret: "秘密字串練習",
@@ -36,6 +37,6 @@ mongoose
   });
 
 // 啟動服務器
-app.listen(8080, () => {
+app.listen(port, () => {
   console.log("伺服器正在運行在8080");
 });
