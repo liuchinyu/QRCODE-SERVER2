@@ -138,7 +138,7 @@ router.post("/user-send-email", async (req, res) => {
     let mailOptions = "";
 
     //領票數量兩張以上，以附檔方式寄送
-    if (numbers > 1) {
+    if (numbers + kidNumbers > 1) {
       if (domain == "gmail.com") {
         mailOptions = {
           from: "xgen.org.tw@gmail.com",
@@ -159,7 +159,9 @@ router.post("/user-send-email", async (req, res) => {
             <p>大人人數：${numbers}</p>
             <p>孩童人數：${kidNumbers}</p>
             <p>座位區域：${seat}</p>
-            <p>票券號碼：XGEN${ticketNum + 1}~XGEN${ticketNum + numbers}</p>
+            <p>票券號碼：XGEN${ticketNum + 1}~XGEN${
+            ticketNum + numbers + kidNumbers
+          }</p>
             <p style="color:blue; font-size:14px;">如有票券取得之相關問題，請隨時與我們聯繫，謝謝</p>
             <p style="color:blue; font-size:14px;">客服電話：(02)2792-8788#502</p>
             <p style="color:blue; font-size:14px;">客服信箱：xgen.org.tw@gmail.com</p>
@@ -188,7 +190,9 @@ router.post("/user-send-email", async (req, res) => {
             <p>大人人數：${numbers}</p>
             <p>孩童人數：${kidNumbers}</p>
             <p>座位區域：${seat}</p>
-            <p>票券號碼：XGEN${ticketNum + 1}~XGEN${ticketNum + numbers}</p>
+            <p>票券號碼：XGEN${ticketNum + 1}~XGEN${
+            ticketNum + numbers + kidNumbers
+          }</p>
             <p style="color:blue; font-size:14px;">如有票券取得之相關問題，請隨時與我們聯繫，謝謝</p>
             <p style="color:blue; font-size:14px;">客服電話：(02)2792-8788#502</p>
             <p style="color:blue; font-size:14px;">客服信箱：xgen.org.tw@gmail.com</p>
