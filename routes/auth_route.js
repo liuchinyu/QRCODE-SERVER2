@@ -146,9 +146,11 @@ router.post("/user-send-email", async (req, res) => {
           subject: "<<接棒未來 揮出夢想>>入場電子票券 取票成功通知",
           html: `
           <div style="font-family: 'Microsoft JhengHei', sans-serif;">
-            <p>${username} 您好，<span style="color:red">您已成功領取 ${numbers} 張入場電子票券</span></p>
+            <p>${username} 您好，<span style="color:red">您已成功領取 ${
+            numbers + kidNumbers
+          } 張入場電子票券</span></p>
             <p>附件為您所領取的入場電子票券QRCODE，</p>
-            <p style="color:red">再請協助將入場電子票券QRCODE轉發給其它出席人員，每張入場電子票券QRCODE僅限1位大人使用，12歲以下的孩童可免費入場!</p>
+            <p style="color:red">再請協助將入場電子票券QRCODE轉發給其它出席人員，每張入場券僅限1人使用</p>
             <p>當天於驗票口出示即可入場，期待您一同前來共襄盛舉!</p>
             <p>活動名稱：接棒未來，揮出夢想</p>
             <p>活動地點：台北大巨蛋-台北市信義區忠孝東路四段515號</p>
@@ -177,9 +179,11 @@ router.post("/user-send-email", async (req, res) => {
           subject: "<<接棒未來 揮出夢想>>入場電子票券 取票成功通知",
           html: `
           <div style="font-family: 'Microsoft JhengHei', sans-serif;">
-            <p>${username} 您好，<span style="color:red">您已成功領取 ${numbers} 張入場電子票券</span></p>
+            <p>${username} 您好，<span style="color:red">您已成功領取 ${
+            numbers + kidNumbers
+          } 張入場電子票券</span></p>
             <p>附件為您所領取的入場電子票券QRCODE，</p>
-            <p style="color:red">再請協助將入場電子票券QRCODE轉發給其它出席人員，每張入場電子票券QRCODE僅限1位大人使用，12歲以下的孩童可免費入場!</p>
+            <p style="color:red">再請協助將入場電子票券QRCODE轉發給其它出席人員，每張入場券僅限1人使用</p>
             <p>當天於驗票口出示即可入場，期待您一同前來共襄盛舉!</p>
             <p>活動名稱：接棒未來，揮出夢想</p>
             <p>活動地點：台北大巨蛋-台北市信義區忠孝東路四段515號</p>
@@ -213,7 +217,7 @@ router.post("/user-send-email", async (req, res) => {
           html: `
           <div style="font-family: 'Microsoft JhengHei', sans-serif;">
             <p>${username} 您好，<span style="color:red">您已成功領取${numbers}張入場電子票券</span></p>
-            <p>下方為您的入場票券QRCODE，<span style="color:red">每張入場電子票券QRCODE僅限1位大人使用，12歲以下的孩童可免費入場!</span></p>
+            <p>下方為您的入場票券QRCODE，<span style="color:red">每張入場券僅限1人使用</span></p>
             <p>當天於驗票口出示即可入場，期待您一同前來共襄盛舉!</p>
             <p>入場票券QRCODE</p>
             <img src="${qrCodeUrlOnCloudinary}" alt="QR Code" />
@@ -242,7 +246,7 @@ router.post("/user-send-email", async (req, res) => {
           html: `
           <div style="font-family: 'Microsoft JhengHei', sans-serif;">
             <p>${username} 您好，<span style="color:red">您已成功領取${numbers}張入場電子票券</span></p>
-            <p>下方為您的入場票券QRCODE，<span style="color:red">每張入場電子票券QRCODE僅限1位大人使用，12歲以下的孩童可免費入場!</span></p>
+            <p>下方為您的入場票券QRCODE，<span style="color:red">每張入場券僅限1人使用</span></p>
             <p>當天於驗票口出示即可入場，期待您一同前來共襄盛舉!</p>
             <p>入場票券QRCODE</p>
             <img src="${qrCodeUrl}" alt="QR Code" />
