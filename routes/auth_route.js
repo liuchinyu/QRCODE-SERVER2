@@ -3,6 +3,7 @@ require("dotenv").config();
 const router = require("express").Router();
 const User = require("../models/").user;
 const Record = require("../models/").record;
+const Area = require("../models/").area;
 const nodemailer = require("nodemailer");
 const fs = require("fs");
 const path = require("path");
@@ -106,6 +107,12 @@ router.post("/user-send-email", async (req, res) => {
     } = req.body;
     let domain = emails.split("@")[1]; //取得domain
 
+    let seat_area = "";
+    let seat_row = 0;
+    let seat_number = 0;
+    let jump_arr = [];
+    let row_available = true;
+
     // 保存多個 QR 碼並上傳到 Cloudinary
     const qrCodeUrlOnCloudinary = await Promise.all(
       qrCodeUrl.map(async (qrCodeUrl, index) => {
@@ -136,6 +143,74 @@ router.post("/user-send-email", async (req, res) => {
     });
 
     let mailOptions = "";
+
+    try {
+      const foundUser = await Record.findOne({
+        name: "增你強股份有限公司",
+        row_available: true,
+      })
+        .sort({ seat_row: 1 })
+        .exec();
+
+      // 已領過票-->取得接續的位置
+      if (foundUser) {
+        seat_area = foundUser.seat_area;
+        seat_row = foundUser.seat_row;
+        seat_number = foundUser.seat_number;
+      }
+      // 還未領票，以該公司第一排開始排列
+      else {
+        const result = await Area.aggregate([
+          //匹配 areaName
+          {
+            $match: {
+              areaName: "增你強股份有限公司",
+            },
+          },
+          //展開 areaConfigs 陣列
+          {
+            $unwind: "$areaConfigs",
+          },
+          //找出最小的 areaNumber
+          {
+            $sort: {
+              "areaConfigs.areaNumber": 1,
+            },
+          },
+          {
+            $limit: 1,
+          },
+          //展開 rowConfigs 陣列
+          {
+            $unwind: "$areaConfigs.rowConfigs",
+          },
+          //找出最小的 rowNumber
+          {
+            $sort: {
+              "areaConfigs.rowConfigs.rowNumber": 1,
+            },
+          },
+          {
+            $limit: 1,
+          },
+          //整理輸出格式
+          {
+            $project: {
+              areaName: 1,
+              minAreaNumber: "$areaConfigs.areaNumber",
+              minRowConfig: "$areaConfigs.rowConfigs",
+              jumpRules: "$areaConfigs.jumpRules", // 加入 jumpRules
+            },
+          },
+        ]);
+        seat_area = result[0].minAreaNumber;
+        seat_row = result[0].minRowConfig.rowNumber;
+        seat_number = result[0].minRowConfig.startSeat;
+        jump_arr = result[0].jumpRules;
+      }
+    } catch (e) {
+      console.log(e);
+    }
 
     //領票數量兩張以上，以附檔方式寄送
     if (numbers + kidNumbers > 1) {
@@ -290,7 +365,11 @@ router.post("/user-send-email", async (req, res) => {
               ticket_count: numbers,
               ticket_kid: kidNumbers,
               ticket_left: ticketLeft,
-              seat: seat,
+              // 區域
+              seat_area: seat,
+              seat_row: seat_row,
+              seat_number: seat_number,
+              row_available: row_available,
               email: emails,
               url: qrCodeUrlOnCloudinary[times],
             });
@@ -305,7 +384,11 @@ router.post("/user-send-email", async (req, res) => {
               ticket_count: "",
               ticket_kid: "",
               ticket_left: "",
-              seat: seat,
+
+              seat_area: seat,
+              seat_row: seat_row,
+              seat_number: seat_number,
+              row_available: row_available,
               email: "",
               url: qrCodeUrlOnCloudinary[times],
             });

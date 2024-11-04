@@ -9,7 +9,12 @@ const recordSchema = new Schema({
   ticket_count: { type: Number, required: true },
   ticket_kid: { type: Number, required: true },
   ticket_left: { type: Number, required: true },
-  seat: { type: String, required: true },
+  // 區域
+  seat_area: { type: String, required: true },
+  seat_row: { type: Number, required: true },
+  seat_number: { type: Number, required: true },
+  row_available: { type: Boolean, default: true, required: true },
+
   email: { type: String, required: true },
   url: { type: String, required: true },
 });
