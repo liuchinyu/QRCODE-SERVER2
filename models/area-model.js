@@ -26,8 +26,10 @@ const areaSchema = new mongoose.Schema({
       // 跳轉規則
       jumpRules: [
         {
+          fromArea: Number,
           fromRow: Number,
           fromSeat: Number,
+          toArea: Number,
           toRow: Number,
           toSeat: Number,
         },
