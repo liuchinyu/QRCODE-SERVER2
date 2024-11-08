@@ -356,12 +356,13 @@ router.post("/user-send-email", async (req, res) => {
       mail_seat_row: mail_seat_row,
       mail_number: mail_number + 1,
     };
+    // 將調整好的第一筆資料存入
     let mail_record = [];
     mail_record.push(mail_obj);
 
     for (; mail_length > 0; mail_length--) {
       if (mail_times == 0) {
-        const saveResult = await MailRecord.collection.insertOne({
+        await MailRecord.collection.insertOne({
           get_ticket_date: cur_time,
           donor: names,
           taker: username,
@@ -382,7 +383,7 @@ router.post("/user-send-email", async (req, res) => {
         if (mail_number == mail_from_seat) {
           mail_row_available = false;
           try {
-            let update_record = await MailRecord.updateMany(
+            await MailRecord.updateMany(
               { donor: names, seat_row: mail_seat_row },
               { row_available: false }
             );
@@ -397,6 +398,7 @@ router.post("/user-send-email", async (req, res) => {
           mail_record.push(mail_obj);
         }
       } else {
+        // 不為第一筆之資料
         if (++mail_number <= mail_from_seat) {
           // row_available = true;
           if (mail_number == mail_from_seat) {
@@ -420,7 +422,10 @@ router.post("/user-send-email", async (req, res) => {
         } else {
           // 超過當排的座位
           // 取得跳轉下一排之資訊
-          record_result = jump_arr.filter((item) => item.fromRow === seat_row);
+
+          record_result = jump_arr.filter(
+            (item) => item.fromRow === mail_seat_row
+          );
           if (
             record_result[0].fromRow == record_result[0].toRow &&
             record_result[0].fromSeat == record_result[0].toSeat &&
@@ -430,6 +435,8 @@ router.post("/user-send-email", async (req, res) => {
               message: "票券已全數領取完畢，如有問題請與相關窗口聯絡!",
             });
           }
+
+          console.log("record_result", record_result);
 
           mail_to_row = record_result[0].toRow; //取得下一排
           mail_to_area = record_result[0].toArea;
@@ -443,6 +450,7 @@ router.post("/user-send-email", async (req, res) => {
             seat_row: mail_seat_row,
           }).sort({ seat_number: -1 });
 
+          // 分配座位
           if (foundUser) {
             mail_number = foundUser.seat_number + 1;
             mail_seat_area = foundUser.seat_area;
@@ -450,21 +458,28 @@ router.post("/user-send-email", async (req, res) => {
             mail_number = record_result[0].toSeat + 1; //取得下一排的排頭
             mail_seat_area = record_result[0].toArea;
           }
-
           // from_seat = record_result[0].fromSeat; //取得當排的排尾
-
           mail_row_available = true;
-
           let record_result_next = jump_arr.filter(
             (item) => item.fromRow === mail_seat_row
           );
-
           if (record_result_next.length > 0) {
             // 取得下排的容納座位
             mail_from_seat = record_result_next[0].fromSeat;
           } else {
             mail_from_seat = record_result[0].fromSeat;
           }
+          console.log("ttt----mail_seat_area", mail_seat_area);
+          console.log("ttt----mail_seat_row", mail_seat_row);
+          console.log("ttt----mail_number", mail_number);
+
+          mail_obj = {
+            mail_seat_area: mail_seat_area,
+            mail_seat_row: mail_seat_row,
+            mail_number: mail_number,
+          };
+          mail_record.push(mail_obj);
+          //上方為超越當排
         }
         MailRecord.collection.insertOne({
           get_ticket_date: "",
@@ -483,33 +498,19 @@ router.post("/user-send-email", async (req, res) => {
           url: "qrCodeUrlOnCloudinary[times],",
         });
 
-        if (
-          mail_obj.mail_seat_area != mail_seat_area ||
-          mail_obj.mail_seat_row != mail_seat_row
-        ) {
-          let mail_obj = {
-            mail_seat_area: mail_seat_area,
-            mail_seat_row: mail_seat_row,
-            mail_number: mail_number,
-          };
-          console.log();
-          console.log("mail_obj.mail_seat_area ", mail_obj.mail_seat_area);
-          console.log("mail_seat_area ", mail_seat_area);
-          console.log("mail_obj.mail_seat_row ", mail_obj.mail_seat_row);
-          console.log("mail_seat_row ", mail_seat_row);
-          mail_record.push(mail_obj);
-          console.log("-------------------------------");
-        }
         mail_times++;
       }
     }
-    // let new_mail_obj = {
-    //   mail_seat_area: mail_seat_area,
-    //   mail_seat_row: mail_seat_row,
-    //   mail_number: mail_number,
-    // };
-    // mail_record.push(new_mail_obj);
-
+    // 迴圈已結束
+    if (mail_obj.mail_number != mail_number) {
+      mail_obj = {
+        mail_seat_area: mail_seat_area,
+        mail_seat_row: mail_seat_row,
+        mail_number: mail_number,
+      };
+      mail_record.push(mail_obj);
+    }
+    console.log("外部的mail_obj", mail_obj);
     console.log("mail_record", mail_record);
 
     let seatDetails = [];
@@ -1012,7 +1013,7 @@ router.post("/get-seat-number", async (req, res) => {
   for (; length > 0; length--) {
     if (times == 0) {
       // insertOne函式需要使用collection.
-      const saveResult = await TmpRecord.collection.insertOne({
+      await TmpRecord.collection.insertOne({
         get_ticket_date: "cur_time",
         donor: names,
         taker: username,
@@ -1040,7 +1041,7 @@ router.post("/get-seat-number", async (req, res) => {
       if (seat_number == from_seat) {
         row_available = false;
         try {
-          let update_record = await TmpRecord.updateMany(
+          await TmpRecord.updateMany(
             { donor: names, seat_row: seat_row },
             { row_available: false }
           );
