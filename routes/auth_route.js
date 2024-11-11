@@ -238,7 +238,7 @@ router.post("/user-send-email", async (req, res) => {
     } catch (e) {
       console.log(e);
     }
-
+    // console.log()
     // 先將座位區坐滿才跳轉到Buffer區-->取得接續的位置
     if (recordUser) {
       seat_area = recordUser.seat_area;
