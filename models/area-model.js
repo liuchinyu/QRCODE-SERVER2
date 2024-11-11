@@ -32,6 +32,7 @@ const areaSchema = new mongoose.Schema({
           toArea: Number,
           toRow: Number,
           toSeat: Number,
+          bufferArea: Boolean,
         },
       ],
     },

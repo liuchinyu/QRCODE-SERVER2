@@ -38,6 +38,13 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.get("/getBufferNum", async (req, res) => {
+  let check = await User.findOne({ name: "buffer區" });
+  if (check) {
+    return res.send({ data: check.seat_rest });
+  } else return res.send(0);
+});
+
 router.post(
   "/update_data",
   passport.authenticate("jwt", { session: false }),
@@ -53,6 +60,28 @@ router.post(
         }
       ).exec();
       console.log("seatRest", seatRest);
+      return result ? res.send(result) : res.status(500).send("更新資料庫失敗");
+    } catch (e) {
+      console.log(e);
+    }
+  }
+);
+
+router.post(
+  "/update_buffer_data",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    let { bufferRest } = req.body;
+    try {
+      let result = await User.findOneAndUpdate(
+        { name: "buffer區" },
+        { seat_rest: bufferRest },
+        {
+          new: true,
+          runValidators: true,
+        }
+      ).exec();
+      console.log("bufferRest", bufferRest);
       return result ? res.send(result) : res.status(500).send("更新資料庫失敗");
     } catch (e) {
       console.log(e);

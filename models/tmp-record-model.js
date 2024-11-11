@@ -14,7 +14,7 @@ const tmpRecordSchema = new Schema({
   seat_row: { type: Number, required: true },
   seat_number: { type: Number, required: true },
   row_available: { type: Boolean, default: true, required: true },
-
+  buffer_area: { type: Boolean, default: false, required: true },
   email: { type: String, required: true },
   url: { type: String, required: true },
 });
