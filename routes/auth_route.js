@@ -1126,7 +1126,7 @@ router.post("/get-seat-number", async (req, res) => {
     seat_area = tmp_recordUser.seat_area;
     seat_row = tmp_recordUser.seat_row;
     seat_number = tmp_recordUser.seat_number;
-    console.log("1122tmp_recordUser", tmp_recordUser);
+    // console.log("1122tmp_recordUser", tmp_recordUser);
   }
 
   try {
@@ -1236,7 +1236,7 @@ router.post("/get-seat-number", async (req, res) => {
   let times = 0;
   let bltimes = 0;
 
-  console.log("1234當前位置", seat_area, "-", seat_row, "-", seat_number);
+  // console.log("1234當前位置", seat_area, "-", seat_row, "-", seat_number);
 
   // 有小孩且當前座位不足以給小孩坐，跳轉至下一排的排頭
   if (
@@ -1273,7 +1273,7 @@ router.post("/get-seat-number", async (req, res) => {
           seat_area = bufferUser.seat_area;
           seat_row = bufferUser.seat_row;
           seat_number = bufferUser.seat_number;
-          console.log("1265bufferUser", bufferUser);
+          // console.log("1265bufferUser", bufferUser);
         } else {
           // 判斷Buffer區是否剛好坐滿人
           try {
@@ -1494,8 +1494,8 @@ router.post("/get-seat-number", async (req, res) => {
       } else {
         // 超過當排的座位
         // 取得跳轉下一排之資訊
-        console.log("1455seat_row", seat_row); //超過的排數
-        console.log("record_result1456", record_result[0]);
+        // console.log("1455seat_row", seat_row); //超過的排數
+        // console.log("record_result1456", record_result[0]);
         record_result = jump_arr.filter((item) => item.fromRow === seat_row);
         if (
           record_result[0].fromRow == record_result[0].toRow &&
@@ -1512,7 +1512,7 @@ router.post("/get-seat-number", async (req, res) => {
         seat_row = to_row;
         seat_area = to_area;
 
-        console.log("1475跳轉後seat_row", seat_row);
+        // console.log("1475跳轉後seat_row", seat_row);
 
         if (jumpBuffer || record_result[0].bufferArea) {
           jumpBuffer = true;
@@ -1592,6 +1592,18 @@ router.post("/get-seat-number", async (req, res) => {
         let record_result_next = jump_arr.filter(
           (item) => item.fromRow === seat_row
         );
+        if (seat_number == record_result_next[0].fromSeat) {
+          row_available = false;
+          console.log("seat_row", seat_row);
+          try {
+            await TmpRecord.updateMany(
+              { donor: names, seat_row: seat_row },
+              { row_available: false }
+            );
+          } catch (e) {
+            console.log(e);
+          }
+        }
 
         console.log("record_result_next", record_result_next);
         if (record_result_next.length > 0) {
