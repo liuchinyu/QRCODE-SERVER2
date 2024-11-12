@@ -352,6 +352,7 @@ router.post("/user-send-email", async (req, res) => {
     let to_seat = record_result[0].toSeat; //下一排的排頭
     let to_area = record_result[0].toArea;
     let times = 0;
+    let bltimes = 0;
 
     // 有小孩且當前座位不足以給小孩坐，跳轉至下一排的排頭
     if (
@@ -363,7 +364,10 @@ router.post("/user-send-email", async (req, res) => {
         // 先取出下一排排尾的資料
         // 先將當前座位指定為下一排排頭，若記錄裡有資料則以記錄資料為主
         // 判斷下一區是否為Buffer區
-
+        if (bltimes == 1) {
+          break;
+        }
+        bltimes++;
         record_result = jump_arr.filter((item) => item.fromRow === to_row);
         if (record_result[0].bufferArea) {
           jumpBuffer = true;
@@ -444,7 +448,7 @@ router.post("/user-send-email", async (req, res) => {
               seat_row = foundUser.seat_row;
               seat_number = foundUser.seat_number;
             }
-            if (seat_number + numbers + kidNumbers < from_seat) {
+            if (seat_number + numbers + kidNumbers <= from_seat) {
               break;
             }
           }
@@ -469,7 +473,7 @@ router.post("/user-send-email", async (req, res) => {
             seat_row = foundUser.seat_row;
             seat_number = foundUser.seat_number;
           }
-          if (seat_number + numbers + kidNumbers < from_seat) {
+          if (seat_number + numbers + kidNumbers <= from_seat) {
             break;
           }
         }
@@ -1241,6 +1245,10 @@ router.post("/get-seat-number", async (req, res) => {
     numbers + kidNumbers < 6
   ) {
     while (true) {
+      // if (bltimes == 1) {
+      //   break;
+      // }
+      // bltimes++;
       // 先取出下一排排尾的資料
       // 先將當前座位指定為下一排排頭，若記錄裡有資料則以記錄資料為主
       // 判斷下一區是否為Buffer區，抓取Buffer區的座位
@@ -1315,8 +1323,16 @@ router.post("/get-seat-number", async (req, res) => {
         console.log("1308to_area", to_area);
         console.log("1308to_row ", to_row);
         console.log("1308to_seat ", to_seat);
+        console.log("1308from_seat ", from_seat);
+        console.log("total:", seat_number + numbers + kidNumbers);
+
+        if (seat_number + numbers + kidNumbers <= from_seat) {
+          console.log("1111");
+          break;
+        }
 
         if (seat_number + numbers + kidNumbers > from_seat) {
+          //26
           seat_number = to_seat;
           seat_row = to_row;
           seat_area = to_area;
@@ -1338,8 +1354,11 @@ router.post("/get-seat-number", async (req, res) => {
             seat_area = foundUser.seat_area;
             seat_row = foundUser.seat_row;
             seat_number = foundUser.seat_number;
+            console.log("foundUser1111", foundUser);
           }
-          if (seat_number + numbers + kidNumbers < from_seat) {
+
+          if (seat_number + numbers + kidNumbers <= from_seat) {
+            console.log("1111");
             break;
           }
         }
@@ -1373,7 +1392,7 @@ router.post("/get-seat-number", async (req, res) => {
           "-",
           seat_number
         );
-        if (seat_number + numbers + kidNumbers < from_seat) {
+        if (seat_number + numbers + kidNumbers <= from_seat) {
           break;
         }
       }
