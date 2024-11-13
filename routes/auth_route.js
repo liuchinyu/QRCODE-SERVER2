@@ -429,7 +429,10 @@ router.post("/user-send-email", async (req, res) => {
         // 判斷下一區是否為Buffer區
 
         record_result = jump_arr.filter((item) => item.fromRow === to_row);
-        if (record_result[0].bufferArea) {
+        buffer_record_result = jump_buffer_arr.filter(
+          (item) => item.fromRow === to_row
+        );
+        if (buffer_record_result) {
           buffer_record_result = jump_buffer_arr.filter(
             (item) => item.fromRow === to_row
           );
@@ -1512,19 +1515,19 @@ router.post("/get-seat-number", async (req, res) => {
     numbers + kidNumbers < 6
   ) {
     while (true) {
-      // if (bltimes == 1) {
-      //   break;
-      // }
-      // bltimes++;
       // 先取出下一排排尾的資料
       // 先將當前座位指定為下一排排頭，若記錄裡有資料則以記錄資料為主
       // 判斷下一區是否為Buffer區，抓取Buffer區的座位
 
       record_result = jump_arr.filter((item) => item.fromRow === to_row);
+      buffer_record_result = jump_buffer_arr.filter(
+        (item) => item.fromRow === to_row && item.fromArea === to_area
+      );
+
       // console.log("record_result_1246", record_result[0]);
-      if (record_result[0].bufferArea) {
+      if (buffer_record_result) {
         buffer_record_result = jump_buffer_arr.filter(
-          (item) => item.fromRow === to_row
+          (item) => item.fromRow === to_row && item.fromArea === to_area
         );
         jumpBuffer = true;
         try {
