@@ -25,7 +25,6 @@ router.post("/login", async (req, res) => {
   let { password } = req.body;
   try {
     let foundUser = await User.findOne({ password });
-
     if (foundUser) {
       const tokenObject = { _id: password };
       const token = jwt.sign(tokenObject, process.env.PASSPORT_SECRET);
@@ -39,10 +38,10 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/getBufferNum", async (req, res) => {
-  let check = await User.findOne({ name: "buffer區" });
+  let check = await User.findOne({ name: "Buffer區" });
   if (check) {
     return res.send({ data: check.seat_rest });
-  } else return res.send(0);
+  } else return res.status(401).send("0");
 });
 
 router.post(
