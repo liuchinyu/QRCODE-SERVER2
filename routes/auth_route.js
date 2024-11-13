@@ -389,15 +389,33 @@ router.post("/user-send-email", async (req, res) => {
       }
     }
 
+    let from_area = "";
+    let from_row = "";
+    let from_seat = ""; //當排排尾
+    let to_row = ""; //下一排
+    let to_seat = ""; //下一排的排頭
+    let to_area = "";
+    let times = 0;
     // 取得當前座位的跳轉規則
     record_result = jump_arr.filter((item) => item.fromRow === seat_row);
-    let from_area = record_result[0].fromArea;
-    let from_row = record_result[0].fromRow;
-    let from_seat = record_result[0].fromSeat; //當排排尾
-    let to_row = record_result[0].toRow; //下一排
-    let to_seat = record_result[0].toSeat; //下一排的排頭
-    let to_area = record_result[0].toArea;
-    let times = 0;
+    buffer_record_result = jump_buffer_arr.filter(
+      (item) => item.fromRow === seat_row
+    );
+    if (record_result[0]) {
+      from_area = record_result[0].fromArea;
+      from_row = record_result[0].fromRow;
+      from_seat = record_result[0].fromSeat; //當排排尾
+      to_row = record_result[0].toRow; //下一排
+      to_seat = record_result[0].toSeat; //下一排的排頭
+      to_area = record_result[0].toArea;
+    } else if (buffer_record_result[0]) {
+      from_area = buffer_record_result[0].fromArea;
+      from_row = buffer_record_result[0].fromRow;
+      from_seat = buffer_record_result[0].fromSeat; //當排排尾
+      to_row = buffer_record_result[0].toRow; //下一排
+      to_seat = buffer_record_result[0].toSeat; //下一排的排頭
+      to_area = buffer_record_result[0].toArea;
+    }
 
     // 有小孩且當前座位不足以給小孩坐，跳轉至下一排的排頭
     if (
@@ -1454,15 +1472,36 @@ router.post("/get-seat-number", async (req, res) => {
     }
   }
 
+  let from_area = "";
+  let from_row = "";
+  let from_seat = ""; //當排排尾
+  let to_row = ""; //下一排
+  let to_seat = ""; //下一排的排頭
+  let to_area = "";
+  let times = 0;
+
   // 取得當前座位的跳轉規則
   record_result = jump_arr.filter((item) => item.fromRow === seat_row);
-  let from_area = record_result[0].fromArea;
-  let from_row = record_result[0].fromRow;
-  let from_seat = record_result[0].fromSeat; //當排排尾
-  let to_row = record_result[0].toRow; //下一排
-  let to_seat = record_result[0].toSeat; //下一排的排頭
-  let to_area = record_result[0].toArea;
-  let times = 0;
+  buffer_record_result = jump_buffer_arr.filter(
+    (item) => item.fromRow === seat_row
+  );
+  console.log("seat_row", seat_row);
+  console.log("record_result", record_result);
+  if (record_result[0]) {
+    from_area = record_result[0].fromArea;
+    from_row = record_result[0].fromRow;
+    from_seat = record_result[0].fromSeat; //當排排尾
+    to_row = record_result[0].toRow; //下一排
+    to_seat = record_result[0].toSeat; //下一排的排頭
+    to_area = record_result[0].toArea;
+  } else if (buffer_record_result[0]) {
+    from_area = buffer_record_result[0].fromArea;
+    from_row = buffer_record_result[0].fromRow;
+    from_seat = buffer_record_result[0].fromSeat; //當排排尾
+    to_row = buffer_record_result[0].toRow; //下一排
+    to_seat = buffer_record_result[0].toSeat; //下一排的排頭
+    to_area = buffer_record_result[0].toArea;
+  }
 
   // console.log("1234當前位置", seat_area, "-", seat_row, "-", seat_number);
 
