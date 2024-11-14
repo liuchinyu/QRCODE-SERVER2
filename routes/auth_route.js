@@ -597,6 +597,7 @@ router.post("/user-send-email", async (req, res) => {
           seat_row: mail_seat_row,
           seat_number: ++mail_number,
           row_available: mail_row_available,
+          buffer_area: mailJump ? true : false,
           email: emails,
           url: "qrCodeUrlOnCloudinary[times]",
         });
@@ -872,6 +873,7 @@ router.post("/user-send-email", async (req, res) => {
           seat_row: mail_seat_row,
           seat_number: mail_number,
           row_available: mail_row_available,
+          buffer_area: mailJump ? true : false,
           email: "",
           url: "qrCodeUrlOnCloudinary[times],",
         });
