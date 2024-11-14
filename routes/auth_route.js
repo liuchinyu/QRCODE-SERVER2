@@ -1344,6 +1344,7 @@ router.post("/get-seat-number", async (req, res) => {
       },
     },
   ]);
+  // console.log("record_result", record_result[0]);
   let first_seat_area = record_result[0].minAreaNumber;
   let first_seat_row = record_result[0].minRowConfig.rowNumber;
   let first_seat_number = record_result[0].minRowConfig.startSeat;
@@ -1351,6 +1352,8 @@ router.post("/get-seat-number", async (req, res) => {
   jump_buffer_arr = buffer_record_result[0].jumpRules;
   let row_available = true;
   record_result = jump_arr.filter((item) => item.fromRow === first_seat_row);
+  // console.log("record_result2", record_result[0]);
+  // console.log("first_seat_row", first_seat_row);
   let first_row_available = record_result[0].row_available;
 
   // 取得記錄裡面不屬於Buffer區可坐的最小位置
@@ -1487,8 +1490,8 @@ router.post("/get-seat-number", async (req, res) => {
   buffer_record_result = jump_buffer_arr.filter(
     (item) => item.fromRow === seat_row
   );
-  console.log("seat_row", seat_row);
-  console.log("record_result", record_result);
+  // console.log("seat_row", seat_row);
+  // console.log("record_result", record_result);
   if (record_result[0]) {
     from_area = record_result[0].fromArea;
     from_row = record_result[0].fromRow;
@@ -1584,7 +1587,7 @@ router.post("/get-seat-number", async (req, res) => {
         buffer_record_result = jump_buffer_arr.filter(
           (item) => item.fromRow === seat_row
         );
-        console.log("1299--record_result", record_result[0]);
+        // console.log("1299--record_result", record_result[0]);
 
         // 取得當前跳轉規則
         from_row = buffer_record_result[0].fromRow;
@@ -1753,16 +1756,23 @@ router.post("/get-seat-number", async (req, res) => {
         // console.log("1455seat_row", seat_row); //超過的排數
         // console.log("record_result1456", record_result[0]);
         record_result = jump_arr.filter((item) => item.fromRow === seat_row);
-        if (
-          record_result[0].fromRow == record_result[0].toRow &&
-          record_result[0].fromSeat == record_result[0].toSeat &&
-          seat_number > record_result[0].toSeat
-        ) {
-          return res.status(405).json({
-            message: "票券已全數領取完畢，如有問題請與相關窗口聯絡!",
-          });
+        buffer_record_result = jump_buffer_arr.filter(
+          (item) => item.fromRow === seat_row
+        );
+        console.log("1762seat_row", seat_row);
+        if (record_result[0]) {
+          if (
+            record_result[0].fromRow == record_result[0].toRow &&
+            record_result[0].fromSeat == record_result[0].toSeat &&
+            seat_number > record_result[0].toSeat
+          ) {
+            return res.status(405).json({
+              message: "票券已全數領取完畢，如有問題請與相關窗口聯絡!",
+            });
+          }
         }
-        if (jumpBuffer || record_result[0].bufferArea) {
+        console.log("record_result", record_result[0]);
+        if (buffer_record_result[0]) {
           buffer_record_result = jump_buffer_arr.filter(
             (item) => item.fromRow === seat_row
           );
@@ -1784,6 +1794,7 @@ router.post("/get-seat-number", async (req, res) => {
             })
               .sort({ seat_row: 1, seat_number: -1 })
               .exec();
+            console.log("jumpBufferUser", jumpBufferUser);
             if (jumpBufferUser) {
               seat_area = jumpBufferUser.seat_area;
               seat_row = jumpBufferUser.seat_row;
@@ -1823,11 +1834,76 @@ router.post("/get-seat-number", async (req, res) => {
             seat_number = foundUser.seat_number + 1;
             seat_area = foundUser.seat_area;
           } else {
-            seat_number = record_result[0].toSeat + 1; //取得下一排的排頭
-            seat_area = record_result[0].toArea;
+            // 跳了下一行後，若跨越到大Buffer區不會取得存在大Buffer區的人
+            buffer_record_result = jump_buffer_arr.filter(
+              (item) => item.fromRow === seat_row
+            );
+            console.log("確認buffer_record_result", buffer_record_result[0]);
+            if (buffer_record_result[0]) {
+              try {
+                let jumpBufferUser = await TmpRecord.findOne({
+                  row_available: true,
+                  buffer_area: true,
+                })
+                  .sort({ seat_row: 1, seat_number: -1 })
+                  .exec();
+                console.log("jumpBufferUser1850", jumpBufferUser);
+                if (jumpBufferUser) {
+                  seat_area = jumpBufferUser.seat_area;
+                  seat_row = jumpBufferUser.seat_row;
+                  seat_number = jumpBufferUser.seat_number + 1;
+                  console.log("階段1854jumpBufferUser", jumpBufferUser[0]);
+                  console.log("階段1854_seat_number", seat_number);
+                } else {
+                  try {
+                    const foundUser = await TmpRecord.findOne({
+                      row_available: false,
+                      buffer_area: true,
+                    })
+                      .sort({ seat_row: -1 })
+                      .exec();
+                    if (foundUser) {
+                      full_row = foundUser.seat_row;
+                      buffer_record_result = jump_buffer_arr.filter(
+                        (item) => item.fromRow === full_row
+                      );
+                      if (
+                        buffer_record_result[0].fromRow ==
+                          buffer_record_result[0].toRow &&
+                        buffer_record_result[0].fromSeat ==
+                          buffer_record_result[0].toSeat &&
+                        buffer_record_result[0].fromArea ==
+                          buffer_record_result[0].toArea &&
+                        seat_number > buffer_record_result[0].toSeat
+                      ) {
+                        return res.status(405).json({
+                          message:
+                            "票券已全數領取完畢，如有問題請與相關窗口聯絡!",
+                        });
+                      }
+                      seat_area = buffer_record_result[0].toArea;
+                      seat_row = buffer_record_result[0].toRow;
+                      seat_number = buffer_record_result[0].toSeat;
+                    }
+                    // 跨越的第一筆Buffer資料
+                    else {
+                      seat_number = 1;
+                    }
+                  } catch (e) {
+                    console.log(e);
+                  }
+                }
+                console.log("1891seat_number", seat_number);
+              } catch (e) {
+                console.log(e);
+              }
+            } else {
+              seat_number = record_result[0].toSeat + 1; //取得下一排的排頭
+              seat_area = record_result[0].toArea;
+            }
           }
         }
-
+        console.log("buffer_record_result", buffer_record_result[0]);
         // console.log("1475跳轉後seat_row", seat_row);
 
         row_available = true;
@@ -1838,7 +1914,7 @@ router.post("/get-seat-number", async (req, res) => {
           );
           if (seat_number == record_result_next[0].fromSeat) {
             row_available = false;
-            console.log("seat_row", seat_row);
+            // console.log("seat_row", seat_row);
             try {
               await TmpRecord.updateMany(
                 { donor: names, seat_row: seat_row },
@@ -1862,9 +1938,10 @@ router.post("/get-seat-number", async (req, res) => {
           let record_result_next = jump_buffer_arr.filter(
             (item) => item.fromRow === seat_row
           );
+
           if (seat_number == record_result_next[0].fromSeat) {
             row_available = false;
-            console.log("seat_row", seat_row);
+            // console.log("seat_row", seat_row);
             try {
               await TmpRecord.updateMany(
                 { seat_row: seat_row, buffer_area: true },
@@ -1874,7 +1951,7 @@ router.post("/get-seat-number", async (req, res) => {
               console.log(e);
             }
           }
-          console.log("record_result_next", record_result_next);
+          // console.log("record_result_next", record_result_next);
           if (record_result_next.length > 0) {
             // 取得下排的容納座位
             from_seat = record_result_next[0].fromSeat;
