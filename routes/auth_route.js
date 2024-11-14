@@ -73,7 +73,7 @@ router.post(
     let { bufferRest } = req.body;
     try {
       let result = await User.findOneAndUpdate(
-        { name: "buffer區" },
+        { name: "Buffer區" },
         { seat_rest: bufferRest },
         {
           new: true,
