@@ -331,62 +331,6 @@ router.post("/user-send-email", async (req, res) => {
       // 判斷是否已跳轉到Buffer區，從Buffer區中接續指定座位
       record_result = jump_arr.filter((item) => item.fromRow === seat_row);
       // console.log("record_result[0]", record_result[0]);
-      if (record_result[0].bufferArea) {
-        //因為Buffer區可能已被其他公司取位，要取得記錄裡面屬於Buffer區可坐的最小位置
-        jumpBuffer = true;
-        mailJump = true;
-
-        try {
-          bufferUser = await Record.findOne({
-            row_available: true,
-            buffer_area: true,
-          })
-            .sort({ seat_row: 1, seat_number: -1 })
-            .exec();
-        } catch (e) {
-          console.log(e);
-        }
-        if (bufferUser) {
-          seat_area = bufferUser.seat_area;
-          seat_row = bufferUser.seat_row;
-          seat_number = bufferUser.seat_number;
-        } else {
-          // 判斷Buffer區是否剛好坐滿人
-          try {
-            const foundUser = await Record.findOne({
-              row_available: false,
-              buffer_area: true,
-            })
-              .sort({ seat_row: -1 })
-              .exec();
-            if (foundUser) {
-              full_row = foundUser.seat_row;
-              buffer_record_result = jump_buffer_arr.filter(
-                (item) =>
-                  item.fromRow === full_row && item.fromArea === seat_area
-              );
-              if (
-                buffer_record_result[0].fromRow ==
-                  buffer_record_result[0].toRow &&
-                buffer_record_result[0].fromSeat ==
-                  buffer_record_result[0].toSeat &&
-                buffer_record_result[0].fromArea ==
-                  buffer_record_result[0].toArea &&
-                seat_number > buffer_record_result[0].toSeat
-              ) {
-                return res.status(405).json({
-                  message: "票券已全數領取完畢，如有問題請與相關窗口聯絡!",
-                });
-              }
-              seat_area = buffer_record_result[0].toArea;
-              seat_row = buffer_record_result[0].toRow;
-              seat_number = buffer_record_result[0].toSeat;
-            }
-          } catch (e) {
-            console.log(e);
-          }
-        }
-      }
     }
 
     let from_area = "";
@@ -398,9 +342,7 @@ router.post("/user-send-email", async (req, res) => {
     let times = 0;
     // 取得當前座位的跳轉規則
     record_result = jump_arr.filter((item) => item.fromRow === seat_row);
-    buffer_record_result = jump_buffer_arr.filter(
-      (item) => item.fromRow === seat_row && item.fromArea === seat_area
-    );
+
     if (record_result[0]) {
       from_area = record_result[0].fromArea;
       from_row = record_result[0].fromRow;
@@ -408,158 +350,9 @@ router.post("/user-send-email", async (req, res) => {
       to_row = record_result[0].toRow; //下一排
       to_seat = record_result[0].toSeat; //下一排的排頭
       to_area = record_result[0].toArea;
-    } else if (buffer_record_result[0]) {
-      from_area = buffer_record_result[0].fromArea;
-      from_row = buffer_record_result[0].fromRow;
-      from_seat = buffer_record_result[0].fromSeat; //當排排尾
-      to_row = buffer_record_result[0].toRow; //下一排
-      to_seat = buffer_record_result[0].toSeat; //下一排的排頭
-      to_area = buffer_record_result[0].toArea;
     }
 
     // 有小孩且當前座位不足以給小孩坐，跳轉至下一排的排頭
-    if (
-      kidNumbers > 0 &&
-      seat_number + numbers + kidNumbers > from_seat &&
-      numbers + kidNumbers < 6
-    ) {
-      while (true) {
-        // 先取出下一排排尾的資料
-        // 先將當前座位指定為下一排排頭，若記錄裡有資料則以記錄資料為主
-        // 判斷下一區是否為Buffer區
-
-        record_result = jump_arr.filter((item) => item.fromRow === to_row);
-        buffer_record_result = jump_buffer_arr.filter(
-          (item) => item.fromRow === to_row && item.fromArea === to_area
-        );
-        if (buffer_record_result) {
-          buffer_record_result = jump_buffer_arr.filter(
-            (item) => item.fromRow === to_row && item.fromArea === to_area
-          );
-          jumpBuffer = true;
-          mailJump = true;
-          try {
-            bufferUser = await Record.findOne({
-              seat_row: to_row,
-              row_available: true,
-              buffer_area: true,
-            })
-              .sort({ seat_row: 1, seat_number: -1 })
-              .exec();
-          } catch (e) {
-            console.log(e);
-          }
-          if (bufferUser) {
-            seat_area = bufferUser.seat_area;
-            seat_row = bufferUser.seat_row;
-            seat_number = bufferUser.seat_number;
-          } else {
-            // 判斷Buffer區是否剛好坐滿人
-            try {
-              const foundUser = await Record.findOne({
-                row_available: false,
-                buffer_area: true,
-              })
-                .sort({ seat_row: -1 })
-                .exec();
-              if (foundUser) {
-                full_row = foundUser.seat_row;
-                record_result = jump_arr.filter(
-                  (item) => item.fromRow === full_row
-                );
-                if (
-                  buffer_record_result[0].fromRow ==
-                    buffer_record_result[0].toRow &&
-                  buffer_record_result[0].fromSeat ==
-                    buffer_record_result[0].toSeat &&
-                  buffer_record_result[0].fromArea ==
-                    buffer_record_result[0].toArea &&
-                  seat_number > buffer_record_result[0].toSeat
-                ) {
-                  return res.status(405).json({
-                    message: "票券已全數領取完畢，如有問題請與相關窗口聯絡!",
-                  });
-                }
-                seat_area = buffer_record_result[0].toArea;
-                seat_row = buffer_record_result[0].toRow;
-                seat_number = buffer_record_result[0].toSeat;
-              }
-            } catch (e) {
-              console.log(e);
-            }
-          }
-          buffer_record_result = jump_buffer_arr.filter(
-            (item) => item.fromRow === seat_row && item.fromArea === seat_area
-          );
-
-          from_row = buffer_record_result[0].fromRow;
-          from_seat = buffer_record_result[0].fromSeat; //當排排尾
-          to_row = buffer_record_result[0].toRow; //下一排
-          to_seat = buffer_record_result[0].toSeat; //下一排的排頭
-          to_area = buffer_record_result[0].toArea;
-          // 跳轉到Buffer區要再確認當前排數是否有座位容納小孩
-          if (seat_number + numbers + kidNumbers <= from_seat) {
-            break;
-          }
-
-          if (seat_number + numbers + kidNumbers > from_seat) {
-            seat_number = to_seat;
-            seat_row = to_row;
-            seat_area = to_area;
-            buffer_record_result = jump_buffer_arr.filter(
-              (item) => item.fromRow === seat_row && item.fromArea === seat_area
-            );
-            from_seat = buffer_record_result[0].fromSeat; //當排排尾
-            from_row = buffer_record_result[0].fromRow;
-            to_area = buffer_record_result[0].toArea;
-            to_row = buffer_record_result[0].toRow; //下一排
-            to_seat = buffer_record_result[0].toSeat;
-
-            let foundUser = await Record.findOne({
-              row_available: true,
-              seat_row: seat_row,
-              buffer_area: true,
-            }).sort({ seat_number: -1 });
-
-            // 以當前最大的編號去判斷是否有足夠座位給小孩子
-            if (foundUser) {
-              seat_area = foundUser.seat_area;
-              seat_row = foundUser.seat_row;
-              seat_number = foundUser.seat_number;
-            }
-            if (seat_number + numbers + kidNumbers <= from_seat) {
-              break;
-            }
-          }
-        } else {
-          seat_number = to_seat;
-          seat_row = to_row;
-          seat_area = to_area;
-
-          from_seat = record_result[0].fromSeat; //當排排尾
-          from_row = record_result[0].fromRow;
-          to_area = record_result[0].toArea;
-          to_row = record_result[0].toRow; //下一排
-          to_seat = record_result[0].toSeat;
-
-          let foundUser = await Record.findOne({
-            donor: names,
-            row_available: true,
-            seat_row: seat_row,
-          }).sort({ seat_number: -1 });
-          // 以當前最大的編號去判斷是否有足夠座位給小孩子
-          if (foundUser) {
-            seat_area = foundUser.seat_area;
-            seat_row = foundUser.seat_row;
-            seat_number = foundUser.seat_number;
-          }
-          if (seat_number + numbers + kidNumbers <= from_seat) {
-            break;
-          }
-        }
-        // 判斷記錄裡面是否有下一排的座位，並取出最大的編號
-      }
-    }
 
     seat = seat_area;
 
@@ -677,138 +470,31 @@ router.post("/user-send-email", async (req, res) => {
             }
           }
 
-          if (buffer_record_result[0]) {
-            buffer_record_result = jump_buffer_arr.filter(
-              (item) =>
-                item.fromRow === mail_seat_row &&
-                item.fromArea === mail_seat_area
-            );
-            if (
-              buffer_record_result[0].fromRow ==
-                buffer_record_result[0].toRow &&
-              buffer_record_result[0].fromSeat ==
-                buffer_record_result[0].toSeat &&
-              mail_number > buffer_record_result[0].toSeat
-            ) {
-              return res.status(405).json({
-                message: "票券已全數領取完畢，如有問題請與相關窗口聯絡!",
-              });
-            }
-            mailJump = true;
-            try {
-              let jumpBufferUser = await MailRecord.findOne({
-                row_available: true,
-                buffer_area: true,
-              })
-                .sort({ seat_row: 1, seat_number: -1 })
-                .exec();
-              if (jumpBufferUser) {
-                mail_seat_area = jumpBufferUser.seat_area;
-                mail_seat_row = jumpBufferUser.seat_row;
-                mail_number = jumpBufferUser.seat_number + 1;
-              } else {
-                mail_seat_area = buffer_record_result[0].toArea;
-                mail_seat_row = buffer_record_result[0].toRow;
-                mail_number = buffer_record_result[0].toSeat + 1; //取得下一排的排頭
-              }
+          console.log("mail_seat_area", mail_seat_area);
+          console.log("mail_seat_row", mail_seat_row);
+          console.log("mail_seat_number", mail_number);
+          mail_to_row = record_result[0].toRow; //取得下一排
+          mail_to_area = record_result[0].toArea;
+          mail_seat_row = mail_to_row;
+          mail_seat_area = mail_to_area;
 
-              let jump_next = jump_buffer_arr.filter(
-                (item) => item.fromRow === mail_seat_row
-              );
-            } catch (e) {
-              console.log(e);
-            }
+          // 取得記錄裡面判斷該欄是否已有座位
+          let foundUser = await MailRecord.findOne({
+            donor: names,
+            row_available: true,
+            seat_row: mail_seat_row,
+          }).sort({ seat_number: -1 });
+
+          // 分配座位
+          if (foundUser) {
+            mail_number = foundUser.seat_number + 1;
+            mail_seat_area = foundUser.seat_area;
           } else {
-            console.log("mail_seat_area", mail_seat_area);
-            console.log("mail_seat_row", mail_seat_row);
-            console.log("mail_seat_number", mail_number);
-            mail_to_row = record_result[0].toRow; //取得下一排
-            mail_to_area = record_result[0].toArea;
-            mail_seat_row = mail_to_row;
-            mail_seat_area = mail_to_area;
-
-            // 取得記錄裡面判斷該欄是否已有座位
-            let foundUser = await MailRecord.findOne({
-              donor: names,
-              row_available: true,
-              seat_row: mail_seat_row,
-            }).sort({ seat_number: -1 });
-
-            // 分配座位
-            if (foundUser) {
-              mail_number = foundUser.seat_number + 1;
-              mail_seat_area = foundUser.seat_area;
-            } else {
-              // 跳了下一行後，若跨越到大Buffer區不會取得存在大Buffer區的人
-              buffer_record_result = jump_buffer_arr.filter(
-                (item) =>
-                  item.fromRow === mail_seat_row &&
-                  item.fromArea === mail_seat_area
-              );
-
-              if (buffer_record_result[0]) {
-                try {
-                  let jumpBufferUser = await MailRecord.findOne({
-                    row_available: true,
-                    buffer_area: true,
-                  })
-                    .sort({ seat_row: 1, seat_number: -1 })
-                    .exec();
-                  console.log("jumpBufferUser1850", jumpBufferUser);
-                  if (jumpBufferUser) {
-                    mail_seat_area = jumpBufferUser.seat_area;
-                    mail_seat_row = jumpBufferUser.seat_row;
-                    mail_number = jumpBufferUser.seat_number + 1;
-                  } else {
-                    try {
-                      const foundUser = await MailRecord.findOne({
-                        row_available: false,
-                        buffer_area: true,
-                      })
-                        .sort({ seat_row: -1 })
-                        .exec();
-                      if (foundUser) {
-                        let mail_full_row = foundUser.seat_row;
-                        buffer_record_result = jump_buffer_arr.filter(
-                          (item) =>
-                            item.fromRow === mail_full_row &&
-                            item.bufferArea == true
-                        );
-                        if (
-                          buffer_record_result[0].fromRow ==
-                            buffer_record_result[0].toRow &&
-                          buffer_record_result[0].fromSeat ==
-                            buffer_record_result[0].toSeat &&
-                          buffer_record_result[0].fromArea ==
-                            buffer_record_result[0].toArea &&
-                          seat_number > buffer_record_result[0].toSeat
-                        ) {
-                          return res.status(405).json({
-                            message:
-                              "票券已全數領取完畢，如有問題請與相關窗口聯絡!",
-                          });
-                        }
-                        seat_area = buffer_record_result[0].toArea;
-                        seat_row = buffer_record_result[0].toRow;
-                        seat_number = buffer_record_result[0].toSeat;
-                      }
-                      // 跨越的第一筆Buffer資料
-                      else {
-                        mail_number = 1;
-                      }
-                    } catch (e) {
-                      console.log(e);
-                    }
-                  }
-                } catch (e) {
-                  console.log(e);
-                }
-              } else {
-                mail_number = record_result[0].toSeat + 1; //取得下一排的排頭
-                mail_seat_area = record_result[0].toArea;
-              }
-            }
+            // 跳了下一行後，若跨越到大Buffer區不會取得存在大Buffer區的人
+            mail_number = record_result[0].toSeat + 1; //取得下一排的排頭
+            mail_seat_area = record_result[0].toArea;
           }
+
           // from_seat = record_result[0].fromSeat; //取得當排的排尾
           mail_row_available = true;
 
@@ -1057,9 +743,7 @@ router.post("/user-send-email", async (req, res) => {
         };
       }
     }
-    // console.log("正確seat_area", seat_area);
-    // console.log("正確seat_row", seat_row);
-    // console.log("正確seat_number", seat_number);
+
     // 設定郵件內容
     // 發送郵件
     try {
@@ -1166,140 +850,24 @@ router.post("/user-send-email", async (req, res) => {
                 }
               }
 
-              if (buffer_record_result[0]) {
-                buffer_record_result = jump_buffer_arr.filter(
-                  (item) => item.fromRow === seat_row
-                );
+              to_row = record_result[0].toRow; //取得下一排
+              to_area = record_result[0].toArea;
+              seat_row = to_row;
+              seat_area = to_area;
+              // 取得記錄裡面判斷該欄是否已有座位
+              let foundUser = await Record.findOne({
+                donor: names,
+                row_available: true,
+                seat_row: seat_row,
+              }).sort({ seat_number: -1 });
 
-                if (
-                  buffer_record_result[0].fromRow ==
-                    buffer_record_result[0].toRow &&
-                  buffer_record_result[0].fromSeat ==
-                    buffer_record_result[0].toSeat &&
-                  seat_number > buffer_record_result[0].toSeat
-                ) {
-                  return res.status(405).json({
-                    message: "票券已全數領取完畢，如有問題請與相關窗口聯絡!",
-                  });
-                }
-                jumpBuffer = true;
-                try {
-                  let jumpBufferUser = await Record.findOne({
-                    row_available: true,
-                    buffer_area: true,
-                  })
-                    .sort({ seat_row: 1, seat_number: -1 })
-                    .exec();
-                  if (jumpBufferUser) {
-                    seat_area = jumpBufferUser.seat_area;
-                    seat_row = jumpBufferUser.seat_row;
-                    seat_number = jumpBufferUser.seat_number + 1;
-                  } else {
-                    seat_area = buffer_record_result[0].toArea;
-                    seat_row = buffer_record_result[0].toRow;
-                    seat_number = buffer_record_result[0].toSeat + 1; //取得下一排的排頭
-                  }
-                  let jump_next = jump_buffer_arr.filter(
-                    (item) => item.fromRow === seat_row
-                  );
-                } catch (e) {
-                  console.log(e);
-                }
+              if (foundUser) {
+                seat_number = foundUser.seat_number + 1;
+                seat_area = foundUser.seat_area;
               } else {
-                to_row = record_result[0].toRow; //取得下一排
-                to_area = record_result[0].toArea;
-                seat_row = to_row;
-                seat_area = to_area;
-                // 取得記錄裡面判斷該欄是否已有座位
-                let foundUser = await Record.findOne({
-                  donor: names,
-                  row_available: true,
-                  seat_row: seat_row,
-                }).sort({ seat_number: -1 });
-
-                if (foundUser) {
-                  seat_number = foundUser.seat_number + 1;
-                  seat_area = foundUser.seat_area;
-                } else {
-                  // 跳了下一行後，若跨越到大Buffer區不會取得存在大Buffer區的人
-                  buffer_record_result = jump_buffer_arr.filter(
-                    (item) =>
-                      item.fromRow === seat_row && item.fromArea === seat_area
-                  );
-                  console.log(
-                    "確認buffer_record_result",
-                    buffer_record_result[0]
-                  );
-                  if (buffer_record_result[0]) {
-                    try {
-                      let jumpBufferUser = await Record.findOne({
-                        row_available: true,
-                        buffer_area: true,
-                      })
-                        .sort({ seat_row: 1, seat_number: -1 })
-                        .exec();
-                      console.log("jumpBufferUserRR1850", jumpBufferUser);
-                      if (jumpBufferUser) {
-                        seat_area = jumpBufferUser.seat_area;
-                        seat_row = jumpBufferUser.seat_row;
-                        seat_number = jumpBufferUser.seat_number + 1;
-                        console.log(
-                          "階段1854recordjumpBufferUser",
-                          jumpBufferUser[0]
-                        );
-                        console.log("階段1854_recod_seat_number", seat_number);
-                      } else {
-                        try {
-                          const foundUser = await Record.findOne({
-                            row_available: false,
-                            buffer_area: true,
-                          })
-                            .sort({ seat_row: -1 })
-                            .exec();
-                          console.log("1244foundUser", foundUser);
-                          if (foundUser) {
-                            full_row = foundUser.seat_row;
-                            buffer_record_result = jump_buffer_arr.filter(
-                              (item) =>
-                                item.fromRow === full_row &&
-                                item.fromArea == true
-                            );
-                            console.log("進入recordFound_user");
-                            if (
-                              buffer_record_result[0].fromRow ==
-                                buffer_record_result[0].toRow &&
-                              buffer_record_result[0].fromSeat ==
-                                buffer_record_result[0].toSeat &&
-                              buffer_record_result[0].fromArea ==
-                                buffer_record_result[0].toArea &&
-                              seat_number > buffer_record_result[0].toSeat
-                            ) {
-                              return res.status(405).json({
-                                message:
-                                  "票券已全數領取完畢，如有問題請與相關窗口聯絡!",
-                              });
-                            }
-                            seat_area = buffer_record_result[0].toArea;
-                            seat_row = buffer_record_result[0].toRow;
-                            seat_number = buffer_record_result[0].toSeat;
-                          }
-                          // 跨越的第一筆Buffer資料
-                          else {
-                            seat_number = 1;
-                          }
-                        } catch (e) {
-                          console.log(e);
-                        }
-                      }
-                      console.log("1891_recod_seat_number", seat_number);
-                    } catch (e) {
-                      console.log(e);
-                    }
-                  } else {
-                    seat_number = record_result[0].toSeat + 1; //取得下一排的排頭
-                    seat_area = record_result[0].toArea;
-                  }
-                }
+                // 跳了下一行後，若跨越到大Buffer區不會取得存在大Buffer區的人
+                seat_number = record_result[0].toSeat + 1; //取得下一排的排頭
+                seat_area = record_result[0].toArea;
               }
 
               row_available = true;
@@ -1328,36 +896,8 @@ router.post("/user-send-email", async (req, res) => {
                 if (record_result_next.length > 0) {
                   // 取得下排的容納座位
                   from_seat = record_result_next[0].fromSeat;
-                  if (record_result_next[0].bufferArea) {
-                    jumpBuffer = true;
-                  }
                 } else {
                   from_seat = record_result[0].fromSeat;
-                }
-              } else {
-                let record_result_next = jump_buffer_arr.filter(
-                  (item) => item.fromRow === seat_row
-                );
-                if (seat_number == record_result_next[0].fromSeat) {
-                  row_available = false;
-                  console.log("seat_row", seat_row);
-                  try {
-                    await Record.updateMany(
-                      { seat_row: seat_row, buffer_area: true },
-                      { row_available: false }
-                    );
-                  } catch (e) {
-                    console.log(e);
-                  }
-                }
-                if (record_result_next.length > 0) {
-                  // 取得下排的容納座位
-                  from_seat = record_result_next[0].fromSeat;
-                  if (record_result_next[0].bufferArea) {
-                    jumpBuffer = true;
-                  }
-                } else {
-                  from_seat = buffer_record_result[0].fromSeat;
                 }
               }
             }
@@ -1677,177 +1217,12 @@ router.post("/get-seat-number", async (req, res) => {
     to_row = record_result[0].toRow; //下一排
     to_seat = record_result[0].toSeat; //下一排的排頭
     to_area = record_result[0].toArea;
-  } else if (buffer_record_result[0]) {
-    from_area = buffer_record_result[0].fromArea;
-    from_row = buffer_record_result[0].fromRow;
-    from_seat = buffer_record_result[0].fromSeat; //當排排尾
-    to_row = buffer_record_result[0].toRow; //下一排
-    to_seat = buffer_record_result[0].toSeat; //下一排的排頭
-    to_area = buffer_record_result[0].toArea;
   }
 
   // console.log("1234當前位置", seat_area, "-", seat_row, "-", seat_number);
 
   // 有小孩且當前座位不足以給小孩坐，跳轉至下一排的排頭
-  if (
-    kidNumbers > 0 &&
-    seat_number + numbers + kidNumbers > from_seat &&
-    numbers + kidNumbers < 6
-  ) {
-    while (true) {
-      // 先取出下一排排尾的資料
-      // 先將當前座位指定為下一排排頭，若記錄裡有資料則以記錄資料為主
-      // 判斷下一區是否為Buffer區，抓取Buffer區的座位
 
-      record_result = jump_arr.filter((item) => item.fromRow === to_row);
-      buffer_record_result = jump_buffer_arr.filter(
-        (item) => item.fromRow === to_row && item.fromArea === to_area
-      );
-
-      // console.log("record_result_1246", record_result[0]);
-      if (buffer_record_result) {
-        buffer_record_result = jump_buffer_arr.filter(
-          (item) => item.fromRow === to_row && item.fromArea === to_area
-        );
-        jumpBuffer = true;
-        try {
-          bufferUser = await TmpRecord.findOne({
-            seat_row: to_row,
-            row_available: true,
-            buffer_area: true,
-          })
-            .sort({ seat_row: 1, seat_number: -1 })
-            .exec();
-        } catch (e) {
-          console.log(e);
-        }
-        // 判斷跳轉的Buffer區是否已有坐人
-        if (bufferUser) {
-          seat_area = bufferUser.seat_area;
-          seat_row = bufferUser.seat_row;
-          seat_number = bufferUser.seat_number;
-          // console.log("1265bufferUser", bufferUser);
-        } else {
-          // 判斷Buffer區是否剛好坐滿人
-          try {
-            const foundUser = await TmpRecord.findOne({
-              row_available: false,
-              buffer_area: true,
-            })
-              .sort({ seat_row: -1 })
-              .exec();
-            if (foundUser) {
-              full_row = foundUser.seat_row;
-              buffer_record_result = jump_buffer_arr.filter(
-                (item) => item.fromRow === full_row && item.fromArea == true
-              );
-              if (
-                buffer_record_result[0].fromRow ==
-                  buffer_record_result[0].toRow &&
-                buffer_record_result[0].fromSeat ==
-                  buffer_record_result[0].toSeat &&
-                buffer_record_result[0].fromArea ==
-                  buffer_record_result[0].toArea &&
-                seat_number > buffer_record_result[0].toSeat
-              ) {
-                return res.status(405).json({
-                  message: "票券已全數領取完畢，如有問題請與相關窗口聯絡!",
-                });
-              }
-              seat_area = buffer_record_result[0].toArea;
-              seat_row = buffer_record_result[0].toRow;
-              seat_number = buffer_record_result[0].toSeat;
-            }
-          } catch (e) {
-            console.log(e);
-          }
-        }
-        buffer_record_result = jump_buffer_arr.filter(
-          (item) => item.fromRow === seat_row && item.fromArea == true
-        );
-        // console.log("1299--record_result", record_result[0]);
-
-        // 取得當前跳轉規則
-        from_row = buffer_record_result[0].fromRow;
-        from_seat = buffer_record_result[0].fromSeat; //當排排尾
-        to_row = buffer_record_result[0].toRow; //下一排
-        to_seat = buffer_record_result[0].toSeat; //下一排的排頭
-        to_area = buffer_record_result[0].toArea;
-        // 跳轉到Buffer區要再確認當前排數是否有座位容納小孩
-
-        if (seat_number + numbers + kidNumbers <= from_seat) {
-          // console.log("1111");
-          break;
-        }
-
-        if (seat_number + numbers + kidNumbers > from_seat) {
-          //26
-          seat_number = to_seat;
-          seat_row = to_row;
-          seat_area = to_area;
-          buffer_record_result = jump_buffer_arr.filter(
-            (item) => item.fromRow === seat_row && item.fromArea == true
-          );
-          from_seat = buffer_record_result[0].fromSeat; //當排排尾
-          from_row = buffer_record_result[0].fromRow;
-          to_area = buffer_record_result[0].toArea;
-          to_row = buffer_record_result[0].toRow; //下一排
-          to_seat = buffer_record_result[0].toSeat;
-
-          let foundUser = await TmpRecord.findOne({
-            row_available: true,
-            seat_row: seat_row,
-            buffer_area: true,
-          }).sort({ seat_number: -1 });
-
-          // 以當前最大的編號去判斷是否有足夠座位給小孩子
-          if (foundUser) {
-            seat_area = foundUser.seat_area;
-            seat_row = foundUser.seat_row;
-            seat_number = foundUser.seat_number;
-          }
-
-          if (seat_number + numbers + kidNumbers <= from_seat) {
-            break;
-          }
-        }
-      } else {
-        seat_number = to_seat;
-        seat_row = to_row;
-        seat_area = to_area;
-
-        from_seat = record_result[0].fromSeat; //當排排尾
-        from_row = record_result[0].fromRow;
-        to_area = record_result[0].toArea;
-        to_row = record_result[0].toRow; //下一排
-        to_seat = record_result[0].toSeat;
-
-        let foundUser = await TmpRecord.findOne({
-          donor: names,
-          row_available: true,
-          seat_row: seat_row,
-        }).sort({ seat_number: -1 });
-        // 以當前最大的編號去判斷是否有足夠座位給小孩子
-        if (foundUser) {
-          seat_area = foundUser.seat_area;
-          seat_row = foundUser.seat_row;
-          seat_number = foundUser.seat_number;
-        }
-        console.log(
-          "1369當前座位--",
-          seat_area,
-          "-",
-          seat_row,
-          "-",
-          seat_number
-        );
-        if (seat_number + numbers + kidNumbers <= from_seat) {
-          break;
-        }
-      }
-      // 判斷記錄裡面是否有下一排的座位，並取出最大的編號
-    }
-  }
   seat = seat_area;
   let length = numbers + kidNumbers;
 
@@ -1890,15 +1265,6 @@ router.post("/get-seat-number", async (req, res) => {
           } catch (e) {
             console.log(e);
           }
-        } else {
-          try {
-            await TmpRecord.updateMany(
-              { seat_row: seat_row, buffer_area: true },
-              { row_available: false }
-            );
-          } catch (e) {
-            console.log(e);
-          }
         }
       }
     } else {
@@ -1912,15 +1278,6 @@ router.post("/get-seat-number", async (req, res) => {
             try {
               await TmpRecord.updateMany(
                 { donor: names, seat_row: seat_row },
-                { row_available: false }
-              );
-            } catch (e) {
-              console.log(e);
-            }
-          } else {
-            try {
-              await TmpRecord.updateMany(
-                { seat_row: seat_row, buffer_area: true },
                 { row_available: false }
               );
             } catch (e) {
@@ -1950,146 +1307,30 @@ router.post("/get-seat-number", async (req, res) => {
           }
         }
         // console.log("record_result", record_result[0]);
-        if (buffer_record_result[0]) {
-          buffer_record_result = jump_buffer_arr.filter(
-            (item) => item.fromRow === seat_row && item.fromArea == true
-          );
-          if (
-            buffer_record_result[0].fromRow == buffer_record_result[0].toRow &&
-            buffer_record_result[0].fromSeat ==
-              buffer_record_result[0].toSeat &&
-            seat_number > buffer_record_result[0].toSeat
-          ) {
-            return res.status(405).json({
-              message: "票券已全數領取完畢，如有問題請與相關窗口聯絡!",
-            });
-          }
-          jumpBuffer = true;
-          try {
-            let jumpBufferUser = await TmpRecord.findOne({
-              row_available: true,
-              buffer_area: true,
-            })
-              .sort({ seat_row: 1, seat_number: -1 })
-              .exec();
-            console.log("jumpBufferUser", jumpBufferUser);
-            if (jumpBufferUser) {
-              seat_area = jumpBufferUser.seat_area;
-              seat_row = jumpBufferUser.seat_row;
-              seat_number = jumpBufferUser.seat_number + 1;
-            } else {
-              seat_area = buffer_record_result[0].toArea;
-              seat_row = buffer_record_result[0].toRow;
-              seat_number = buffer_record_result[0].toSeat + 1; //取得下一排的排頭
-            }
-            console.log(
-              "1517seat_area-row-number",
-              seat_area,
-              "-",
-              seat_row,
-              "-",
-              seat_number
-            );
-            let jump_next = jump_buffer_arr.filter(
-              (item) => item.fromRow === seat_row
-            );
-          } catch (e) {
-            console.log(e);
-          }
+
+        to_row = record_result[0].toRow; //取得下一排
+        to_area = record_result[0].toArea;
+        seat_row = to_row;
+        seat_area = to_area;
+        // 取得記錄裡面判斷該欄是否已有座位
+        let foundUser = await TmpRecord.findOne({
+          donor: names,
+          row_available: true,
+          seat_row: seat_row,
+        }).sort({ seat_number: -1 });
+
+        if (foundUser) {
+          seat_number = foundUser.seat_number + 1;
+          seat_area = foundUser.seat_area;
         } else {
-          to_row = record_result[0].toRow; //取得下一排
-          to_area = record_result[0].toArea;
-          seat_row = to_row;
-          seat_area = to_area;
-          // 取得記錄裡面判斷該欄是否已有座位
-          let foundUser = await TmpRecord.findOne({
-            donor: names,
-            row_available: true,
-            seat_row: seat_row,
-          }).sort({ seat_number: -1 });
-
-          if (foundUser) {
-            seat_number = foundUser.seat_number + 1;
-            seat_area = foundUser.seat_area;
-          } else {
-            // 跳了下一行後，若跨越到大Buffer區不會取得存在大Buffer區的人
-            buffer_record_result = jump_buffer_arr.filter(
-              (item) => item.fromRow === seat_row && item.fromArea == true
-            );
-            // console.log("確認buffer_record_result", buffer_record_result[0]);
-            if (buffer_record_result[0]) {
-              try {
-                let jumpBufferUser = await TmpRecord.findOne({
-                  row_available: true,
-                  buffer_area: true,
-                })
-                  .sort({ seat_row: 1, seat_number: -1 })
-                  .exec();
-                // console.log("jumpBufferUser1850", jumpBufferUser);
-                if (jumpBufferUser) {
-                  seat_area = jumpBufferUser.seat_area;
-                  seat_row = jumpBufferUser.seat_row;
-                  seat_number = jumpBufferUser.seat_number + 1;
-                  console.log("階段1854jumpBufferUser", jumpBufferUser[0]);
-                  console.log("階段1854_seat_number", seat_number);
-                } else {
-                  try {
-                    const foundUser = await TmpRecord.findOne({
-                      row_available: false,
-                      buffer_area: true,
-                    })
-                      .sort({ seat_row: -1 })
-                      .exec();
-                    if (foundUser) {
-                      full_row = foundUser.seat_row;
-                      buffer_record_result = jump_buffer_arr.filter(
-                        (item) =>
-                          item.fromRow === full_row && item.fromArea == true
-                      );
-                      if (
-                        buffer_record_result[0].fromRow ==
-                          buffer_record_result[0].toRow &&
-                        buffer_record_result[0].fromSeat ==
-                          buffer_record_result[0].toSeat &&
-                        buffer_record_result[0].fromArea ==
-                          buffer_record_result[0].toArea &&
-                        seat_number > buffer_record_result[0].toSeat
-                      ) {
-                        return res.status(405).json({
-                          message:
-                            "票券已全數領取完畢，如有問題請與相關窗口聯絡!",
-                        });
-                      }
-                      seat_area = buffer_record_result[0].toArea;
-                      seat_row = buffer_record_result[0].toRow;
-                      seat_number = buffer_record_result[0].toSeat;
-                    }
-                    // 跨越的第一筆Buffer資料
-                    else {
-                      seat_number = 1;
-                    }
-                  } catch (e) {
-                    console.log(e);
-                  }
-                }
-                console.log("1891seat_number", seat_number);
-              } catch (e) {
-                console.log(e);
-              }
-            } else {
-              seat_number = record_result[0].toSeat + 1; //取得下一排的排頭
-              seat_area = record_result[0].toArea;
-            }
-          }
+          // 跳了下一行後，若跨越到大Buffer區不會取得存在大Buffer區的人
+          // console.log("確認buffer_record_result", buffer_record_result[0]);
+          seat_number = record_result[0].toSeat + 1; //取得下一排的排頭
+          seat_area = record_result[0].toArea;
         }
-        console.log("buffer_record_result", buffer_record_result[0]);
         // console.log("1475跳轉後seat_row", seat_row);
-
         row_available = true;
-        console.log("2069jumpBuffer", jumpBuffer);
-        console.log("2069seat_row", seat_row);
-        console.log("2069seat_area", seat_area);
-        console.log("2069seat_number", seat_number);
+
         if (!jumpBuffer) {
           let record_result_next = jump_arr.filter(
             (item) => item.fromRow === seat_row
@@ -2115,33 +1356,6 @@ router.post("/get-seat-number", async (req, res) => {
             }
           } else {
             from_seat = record_result[0].fromSeat;
-          }
-        } else {
-          let record_result_next = jump_buffer_arr.filter(
-            (item) => item.fromRow === seat_row
-          );
-
-          if (seat_number == record_result_next[0].fromSeat) {
-            row_available = false;
-            // console.log("seat_row", seat_row);
-            try {
-              await TmpRecord.updateMany(
-                { seat_row: seat_row, buffer_area: true },
-                { row_available: false }
-              );
-            } catch (e) {
-              console.log(e);
-            }
-          }
-          // console.log("record_result_next", record_result_next);
-          if (record_result_next.length > 0) {
-            // 取得下排的容納座位
-            from_seat = record_result_next[0].fromSeat;
-            if (record_result_next[0].bufferArea) {
-              jumpBuffer = true;
-            }
-          } else {
-            from_seat = buffer_record_result[0].fromSeat;
           }
         }
       }
