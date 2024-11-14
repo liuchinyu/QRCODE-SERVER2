@@ -362,7 +362,8 @@ router.post("/user-send-email", async (req, res) => {
             if (foundUser) {
               full_row = foundUser.seat_row;
               buffer_record_result = jump_buffer_arr.filter(
-                (item) => item.fromRow === full_row
+                (item) =>
+                  item.fromRow === full_row && item.fromArea === seat_area
               );
               if (
                 buffer_record_result[0].fromRow ==
@@ -398,7 +399,7 @@ router.post("/user-send-email", async (req, res) => {
     // 取得當前座位的跳轉規則
     record_result = jump_arr.filter((item) => item.fromRow === seat_row);
     buffer_record_result = jump_buffer_arr.filter(
-      (item) => item.fromRow === seat_row
+      (item) => item.fromRow === seat_row && item.fromArea === seat_area
     );
     if (record_result[0]) {
       from_area = record_result[0].fromArea;
@@ -429,11 +430,11 @@ router.post("/user-send-email", async (req, res) => {
 
         record_result = jump_arr.filter((item) => item.fromRow === to_row);
         buffer_record_result = jump_buffer_arr.filter(
-          (item) => item.fromRow === to_row
+          (item) => item.fromRow === to_row && item.fromArea === to_area
         );
         if (buffer_record_result) {
           buffer_record_result = jump_buffer_arr.filter(
-            (item) => item.fromRow === to_row
+            (item) => item.fromRow === to_row && item.fromArea === to_area
           );
           jumpBuffer = true;
           mailJump = true;
@@ -488,7 +489,7 @@ router.post("/user-send-email", async (req, res) => {
             }
           }
           buffer_record_result = jump_buffer_arr.filter(
-            (item) => item.fromRow === seat_row
+            (item) => item.fromRow === seat_row && item.fromArea === seat_area
           );
 
           from_row = buffer_record_result[0].fromRow;
@@ -506,7 +507,7 @@ router.post("/user-send-email", async (req, res) => {
             seat_row = to_row;
             seat_area = to_area;
             buffer_record_result = jump_buffer_arr.filter(
-              (item) => item.fromRow === seat_row
+              (item) => item.fromRow === seat_row && item.fromArea === seat_area
             );
             from_seat = buffer_record_result[0].fromSeat; //當排排尾
             from_row = buffer_record_result[0].fromRow;
@@ -661,7 +662,8 @@ router.post("/user-send-email", async (req, res) => {
             (item) => item.fromRow === mail_seat_row
           );
           buffer_record_result = jump_buffer_arr.filter(
-            (item) => item.fromRow === mail_seat_row
+            (item) =>
+              item.fromRow === mail_seat_row && item.fromArea === mail_seat_area
           );
           if (record_result[0]) {
             if (
@@ -677,7 +679,9 @@ router.post("/user-send-email", async (req, res) => {
 
           if (buffer_record_result[0]) {
             buffer_record_result = jump_buffer_arr.filter(
-              (item) => item.fromRow === mail_seat_row
+              (item) =>
+                item.fromRow === mail_seat_row &&
+                item.fromArea === mail_seat_area
             );
             if (
               buffer_record_result[0].fromRow ==
@@ -715,6 +719,9 @@ router.post("/user-send-email", async (req, res) => {
               console.log(e);
             }
           } else {
+            console.log("mail_seat_area", mail_seat_area);
+            console.log("mail_seat_row", mail_seat_row);
+            console.log("mail_seat_number", mail_number);
             mail_to_row = record_result[0].toRow; //取得下一排
             mail_to_area = record_result[0].toArea;
             mail_seat_row = mail_to_row;
@@ -734,7 +741,9 @@ router.post("/user-send-email", async (req, res) => {
             } else {
               // 跳了下一行後，若跨越到大Buffer區不會取得存在大Buffer區的人
               buffer_record_result = jump_buffer_arr.filter(
-                (item) => item.fromRow === mail_seat_row
+                (item) =>
+                  item.fromRow === mail_seat_row &&
+                  item.fromArea === mail_seat_area
               );
 
               if (buffer_record_result[0]) {
@@ -761,7 +770,9 @@ router.post("/user-send-email", async (req, res) => {
                       if (foundUser) {
                         let mail_full_row = foundUser.seat_row;
                         buffer_record_result = jump_buffer_arr.filter(
-                          (item) => item.fromRow === mail_full_row
+                          (item) =>
+                            item.fromRow === mail_full_row &&
+                            item.bufferArea == true
                         );
                         if (
                           buffer_record_result[0].fromRow ==
@@ -1212,7 +1223,8 @@ router.post("/user-send-email", async (req, res) => {
                 } else {
                   // 跳了下一行後，若跨越到大Buffer區不會取得存在大Buffer區的人
                   buffer_record_result = jump_buffer_arr.filter(
-                    (item) => item.fromRow === seat_row
+                    (item) =>
+                      item.fromRow === seat_row && item.fromArea === seat_area
                   );
                   console.log(
                     "確認buffer_record_result",
@@ -1248,7 +1260,9 @@ router.post("/user-send-email", async (req, res) => {
                           if (foundUser) {
                             full_row = foundUser.seat_row;
                             buffer_record_result = jump_buffer_arr.filter(
-                              (item) => item.fromRow === full_row
+                              (item) =>
+                                item.fromRow === full_row &&
+                                item.fromArea == true
                             );
                             console.log("進入recordFound_user");
                             if (
@@ -1293,6 +1307,11 @@ router.post("/user-send-email", async (req, res) => {
                 let record_result_next = jump_arr.filter(
                   (item) => item.fromRow === seat_row
                 );
+
+                console.log("seat_area1311", seat_area);
+                console.log("seat_row1312", seat_row);
+                console.log("seat_number1313", seat_number);
+
                 if (seat_number == record_result_next[0].fromSeat) {
                   row_available = false;
                   console.log("seat_row", seat_row);
@@ -1610,7 +1629,7 @@ router.post("/get-seat-number", async (req, res) => {
           if (foundUser) {
             full_row = foundUser.seat_row;
             buffer_record_result = jump_buffer_arr.filter(
-              (item) => item.fromRow === full_row
+              (item) => item.fromRow === full_row && item.fromArea == true
             );
             if (
               buffer_record_result[0].fromRow ==
@@ -1647,7 +1666,7 @@ router.post("/get-seat-number", async (req, res) => {
   // 取得當前座位的跳轉規則
   record_result = jump_arr.filter((item) => item.fromRow === seat_row);
   buffer_record_result = jump_buffer_arr.filter(
-    (item) => item.fromRow === seat_row
+    (item) => item.fromRow === seat_row && item.fromArea == true
   );
   // console.log("seat_row", seat_row);
   // console.log("record_result", record_result);
@@ -1720,7 +1739,7 @@ router.post("/get-seat-number", async (req, res) => {
             if (foundUser) {
               full_row = foundUser.seat_row;
               buffer_record_result = jump_buffer_arr.filter(
-                (item) => item.fromRow === full_row
+                (item) => item.fromRow === full_row && item.fromArea == true
               );
               if (
                 buffer_record_result[0].fromRow ==
@@ -1744,7 +1763,7 @@ router.post("/get-seat-number", async (req, res) => {
           }
         }
         buffer_record_result = jump_buffer_arr.filter(
-          (item) => item.fromRow === seat_row
+          (item) => item.fromRow === seat_row && item.fromArea == true
         );
         // console.log("1299--record_result", record_result[0]);
 
@@ -1767,7 +1786,7 @@ router.post("/get-seat-number", async (req, res) => {
           seat_row = to_row;
           seat_area = to_area;
           buffer_record_result = jump_buffer_arr.filter(
-            (item) => item.fromRow === seat_row
+            (item) => item.fromRow === seat_row && item.fromArea == true
           );
           from_seat = buffer_record_result[0].fromSeat; //當排排尾
           from_row = buffer_record_result[0].fromRow;
@@ -1916,9 +1935,9 @@ router.post("/get-seat-number", async (req, res) => {
         // console.log("record_result1456", record_result[0]);
         record_result = jump_arr.filter((item) => item.fromRow === seat_row);
         buffer_record_result = jump_buffer_arr.filter(
-          (item) => item.fromRow === seat_row
+          (item) => item.fromRow === seat_row && item.fromArea === seat_area
         );
-        console.log("1762seat_row", seat_row);
+        // console.log("1762seat_row", seat_row);
         if (record_result[0]) {
           if (
             record_result[0].fromRow == record_result[0].toRow &&
@@ -1930,10 +1949,10 @@ router.post("/get-seat-number", async (req, res) => {
             });
           }
         }
-        console.log("record_result", record_result[0]);
+        // console.log("record_result", record_result[0]);
         if (buffer_record_result[0]) {
           buffer_record_result = jump_buffer_arr.filter(
-            (item) => item.fromRow === seat_row
+            (item) => item.fromRow === seat_row && item.fromArea == true
           );
           if (
             buffer_record_result[0].fromRow == buffer_record_result[0].toRow &&
@@ -1995,7 +2014,7 @@ router.post("/get-seat-number", async (req, res) => {
           } else {
             // 跳了下一行後，若跨越到大Buffer區不會取得存在大Buffer區的人
             buffer_record_result = jump_buffer_arr.filter(
-              (item) => item.fromRow === seat_row
+              (item) => item.fromRow === seat_row && item.fromArea == true
             );
             // console.log("確認buffer_record_result", buffer_record_result[0]);
             if (buffer_record_result[0]) {
@@ -2024,7 +2043,8 @@ router.post("/get-seat-number", async (req, res) => {
                     if (foundUser) {
                       full_row = foundUser.seat_row;
                       buffer_record_result = jump_buffer_arr.filter(
-                        (item) => item.fromRow === full_row
+                        (item) =>
+                          item.fromRow === full_row && item.fromArea == true
                       );
                       if (
                         buffer_record_result[0].fromRow ==
@@ -2066,7 +2086,10 @@ router.post("/get-seat-number", async (req, res) => {
         // console.log("1475跳轉後seat_row", seat_row);
 
         row_available = true;
-
+        console.log("2069jumpBuffer", jumpBuffer);
+        console.log("2069seat_row", seat_row);
+        console.log("2069seat_area", seat_area);
+        console.log("2069seat_number", seat_number);
         if (!jumpBuffer) {
           let record_result_next = jump_arr.filter(
             (item) => item.fromRow === seat_row
@@ -2151,7 +2174,7 @@ router.post("/get-seat-number", async (req, res) => {
       times++;
     }
   }
-  // console.log("seatAreas", seatAreas);
+  console.log("seatAreas", seatAreas);
   return res
     .status(200)
     .json({ message: "Email sent successfully", seatAreas });
