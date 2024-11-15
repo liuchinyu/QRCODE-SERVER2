@@ -470,9 +470,6 @@ router.post("/user-send-email", async (req, res) => {
             }
           }
 
-          console.log("mail_seat_area", mail_seat_area);
-          console.log("mail_seat_row", mail_seat_row);
-          console.log("mail_seat_number", mail_number);
           mail_to_row = record_result[0].toRow; //取得下一排
           mail_to_area = record_result[0].toArea;
           mail_seat_row = mail_to_row;
@@ -587,7 +584,7 @@ router.post("/user-send-email", async (req, res) => {
       };
       mail_record.push(mail_obj);
     }
-    // console.log("外部的mail_obj", mail_obj);
+    console.log("外部的mail_obj", mail_obj);
     // console.log("mail_record", mail_record);
 
     let seatDetails = [];
@@ -597,7 +594,11 @@ router.post("/user-send-email", async (req, res) => {
       const areaRow = `${record.mail_seat_area}區${record.mail_seat_row}排`;
 
       if (currentAreaRow === areaRow) {
-        seatDetails[seatDetails.length - 1] += `~${record.mail_number}號`;
+        // 檢查最後一個座位範圍是否已經包含該號碼
+        const lastSeatDetail = seatDetails[seatDetails.length - 1];
+        if (!lastSeatDetail.includes(`~${record.mail_number}號`)) {
+          seatDetails[seatDetails.length - 1] += `~${record.mail_number}號`;
+        }
       } else {
         if (currentAreaRow) {
           seatDetails.push("、");
