@@ -26,7 +26,7 @@ router.post("/login", async (req, res) => {
   try {
     let foundUser = await User.findOne({ password });
     if (foundUser) {
-      const tokenObject = { _id: password };
+      const tokenObject = { _id: password + 110 };
       const token = jwt.sign(tokenObject, process.env.PASSPORT_SECRET);
       return res.send({ data: foundUser, token: "JWT " + token });
     } else {
@@ -457,7 +457,8 @@ router.post("/user-send-email", async (req, res) => {
           // 取得跳轉下一排之資訊
 
           record_result = jump_arr.filter(
-            (item) => item.fromRow === mail_seat_row
+            (item) =>
+              item.fromRow === mail_seat_row && item.fromArea === mail_seat_area
           );
           buffer_record_result = jump_buffer_arr.filter(
             (item) =>
@@ -878,13 +879,7 @@ router.post("/user-send-email", async (req, res) => {
 
               row_available = true;
               if (!jumpBuffer) {
-                let record_result_next = jump_arr.filter(
-                  (item) => item.fromRow === seat_row
-                );
-
-                console.log("seat_area1311", seat_area);
-                console.log("seat_row1312", seat_row);
-                console.log("seat_number1313", seat_number);
+                let record_result_next = jump_arr.filter();
 
                 if (seat_number == record_result_next[0].fromSeat) {
                   row_available = false;
@@ -1068,7 +1063,7 @@ router.post("/get-seat-number", async (req, res) => {
       },
     },
   ]);
-  console.log("record_result", record_result[0]);
+
   let first_seat_area = record_result[0].minAreaNumber;
   let first_seat_row = "";
   if (record_result[0].minRowConfig.rowNumber) {
@@ -1081,9 +1076,8 @@ router.post("/get-seat-number", async (req, res) => {
   jump_arr = record_result[0].jumpRules;
   jump_buffer_arr = buffer_record_result[0].jumpRules;
   let row_available = true;
-  console.log("first_seat_row", first_seat_row);
   record_result = jump_arr.filter((item) => item.fromRow === first_seat_row);
-  console.log("record_result2", record_result[0]);
+
   // console.log("first_seat_row", first_seat_row);
   let first_row_available = record_result[0].row_available;
 
@@ -1219,7 +1213,7 @@ router.post("/get-seat-number", async (req, res) => {
   // 取得當前座位的跳轉規則
   record_result = jump_arr.filter((item) => item.fromRow === seat_row);
   buffer_record_result = jump_buffer_arr.filter(
-    (item) => item.fromRow === seat_row && item.fromArea == true
+    (item) => item.fromRow === seat_row
   );
   // console.log("seat_row", seat_row);
   // console.log("record_result", record_result);
@@ -1325,6 +1319,7 @@ router.post("/get-seat-number", async (req, res) => {
         to_area = record_result[0].toArea;
         seat_row = to_row;
         seat_area = to_area;
+
         // 取得記錄裡面判斷該欄是否已有座位
         let foundUser = await TmpRecord.findOne({
           donor: names,
@@ -1335,6 +1330,7 @@ router.post("/get-seat-number", async (req, res) => {
         if (foundUser) {
           seat_number = foundUser.seat_number + 1;
           seat_area = foundUser.seat_area;
+          console.log(11);
         } else {
           // 跳了下一行後，若跨越到大Buffer區不會取得存在大Buffer區的人
           // console.log("確認buffer_record_result", buffer_record_result[0]);
@@ -1401,6 +1397,7 @@ router.post("/get-seat-number", async (req, res) => {
       times++;
     }
   }
+  console.log("跑完嘞");
   console.log("seatAreas", seatAreas);
   return res
     .status(200)
