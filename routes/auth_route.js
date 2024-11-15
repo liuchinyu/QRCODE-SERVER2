@@ -255,7 +255,12 @@ router.post("/user-send-email", async (req, res) => {
       },
     ]);
     let first_seat_area = record_result[0].minAreaNumber;
-    let first_seat_row = record_result[0].minRowConfig.rownumber;
+    let first_seat_row = "";
+    if (record_result[0].minRowConfig.rowNumber) {
+      first_seat_row = record_result[0].minRowConfig.rowNumber;
+    } else if (record_result[0].minRowConfig.rownumber) {
+      first_seat_row = record_result[0].minRowConfig.rownumber;
+    }
     let first_seat_number = record_result[0].minRowConfig.startSeat;
     jump_arr = record_result[0].jumpRules;
     jump_buffer_arr = buffer_record_result[0].jumpRules;
@@ -1065,7 +1070,13 @@ router.post("/get-seat-number", async (req, res) => {
   ]);
   console.log("record_result", record_result[0]);
   let first_seat_area = record_result[0].minAreaNumber;
-  let first_seat_row = record_result[0].minRowConfig.rownumber;
+  let first_seat_row = "";
+  if (record_result[0].minRowConfig.rowNumber) {
+    first_seat_row = record_result[0].minRowConfig.rowNumber;
+  } else if (record_result[0].minRowConfig.rownumber) {
+    first_seat_row = record_result[0].minRowConfig.rownumber;
+  }
+
   let first_seat_number = record_result[0].minRowConfig.startSeat;
   jump_arr = record_result[0].jumpRules;
   jump_buffer_arr = buffer_record_result[0].jumpRules;
