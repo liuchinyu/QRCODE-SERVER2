@@ -23,10 +23,11 @@ router.get("/record", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   let { password } = req.body;
+  console.log("password", password);
   try {
     let foundUser = await User.findOne({ password });
     if (foundUser) {
-      const tokenObject = { _id: password + 110 };
+      const tokenObject = { _id: password };
       const token = jwt.sign(tokenObject, process.env.PASSPORT_SECRET);
       return res.send({ data: foundUser, token: "JWT " + token });
     } else {
