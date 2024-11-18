@@ -458,12 +458,10 @@ router.post("/user-send-email", async (req, res) => {
           // 取得跳轉下一排之資訊
 
           record_result = jump_arr.filter(
-            (item) =>
-              item.fromRow === mail_seat_row && item.fromArea === mail_seat_area
+            (item) => item.fromRow === mail_seat_row
           );
           buffer_record_result = jump_buffer_arr.filter(
-            (item) =>
-              item.fromRow === mail_seat_row && item.fromArea === mail_seat_area
+            (item) => item.fromRow === mail_seat_row
           );
           if (record_result[0]) {
             if (
@@ -476,7 +474,6 @@ router.post("/user-send-email", async (req, res) => {
               });
             }
           }
-
           mail_to_row = record_result[0].toRow; //取得下一排
           mail_to_area = record_result[0].toArea;
           mail_seat_row = mail_to_row;
@@ -762,7 +759,6 @@ router.post("/user-send-email", async (req, res) => {
         let length = qrCodeUrlOnCloudinary.length;
         let times = 0;
         seat = seat_area;
-        console.log("1060row_available", row_available);
         for (; length > 0; length--) {
           if (times == 0) {
             //insertOne函式需要使用collection.
@@ -880,7 +876,9 @@ router.post("/user-send-email", async (req, res) => {
 
               row_available = true;
               if (!jumpBuffer) {
-                let record_result_next = jump_arr.filter();
+                let record_result_next = jump_arr.filter(
+                  (item) => item.fromRow === seat_row
+                );
 
                 if (seat_number == record_result_next[0].fromSeat) {
                   row_available = false;
