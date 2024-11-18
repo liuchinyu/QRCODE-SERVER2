@@ -35,7 +35,7 @@ mongoose
   .catch((e) => {
     console.log(e);
   });
-// console.log("1");
+// Server
 // 啟動服務器
 app.listen(port, () => {
   console.log("伺服器正在運行在8080");
